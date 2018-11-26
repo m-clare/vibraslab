@@ -1,12 +1,3 @@
-
-def calculate_mode_scaling(xe, ye, xw, yw, Lb, Lg, eqn=None):
-	if eqn='6-2a':
-		pass
-	if eqn='6-2b':
-		pass
-	else:
-		raise NameError
-
 class Slab(object):
 	def __init__(self, mat_type, damping_ratio, loading, deck, girder,
 		         beam, floor_width, floor_length, mode_scaling):
