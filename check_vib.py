@@ -57,7 +57,11 @@ def check_sensitive_equip_steel(floor_fn, eff_weight, damping, manufacturer_limi
 			else:
 				# very slow
 				V_13 = eqn_6_3a(f_step, floor_fn, damping, eff_weight)
-			V_13_out[speed] = V_13
+			V_13_out[speed]['V_13'] = V_13
+			if V_13 > limit:
+				V_13_out[speed]['crit'] = 'fail'
+			else:
+				V_13_out[speed]['crit'] = 'pass'
 		return V_13_out
 	elif limit_type == 'peak acceleration':
 		pass
@@ -88,7 +92,12 @@ def check_sensitive_equip_concrete(floor_fn, delta_p, manufacturer_limit=None, l
 				V = delta_p * U_v / floor_fn
 			else:
 				raise ValueError
-			V_out[pace] = round(V * 1e6, 0) # provide in micro-in/sec (mips)
+			V_out[pace] = {}
+			V_out[pace]['V'] = round(V * 1e6, 0) # provide in micro-in/sec (mips)
+			if V > limit:
+				V_out[pace]['crit'] = 'fail'
+			else:
+				V_out[pace]['crit'] = 'pass'
 		return V_out
 
 if __name__ == "__main__":
@@ -97,10 +106,10 @@ if __name__ == "__main__":
 	loading = {'sdl': 20., 'll_design': 65., 'll_vib': 11.}
 	reinf   = {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
 			   'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}}}
-	floor = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'b': 22., 'h': 22.}, 
+	floor = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'c1': 22., 'c2': 22.}, 
 		 				       loading=loading, reinforcement=reinf)
 	fn = floor.calculate_f_i()
 	delta_p = floor.calculate_delta_p()
 
 	print(check_sensitive_equip_concrete(8.6, 4.659e-6, manufacturer_limit=None, limit_type='maximum velocity', limit_app='Operating rooms')) # does not allow for accounting for location!
-	print(check_sensitive_equip_concrete(fn, delta_p, manufacturer_limit=None, limit_type='maximum velocity', limit_app='Operating rooms')) # does not allow for accounting for location!
+	print(check_sensitive_equip_concrete(fn, delta_p, manufacturer_limit=7000, limit_type='maximum velocity')) # does not allow for accounting for location!

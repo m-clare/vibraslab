@@ -48,8 +48,8 @@ class TwoWayFlatPlateSlab(object):
 
 		# set mass / weight
 		sdl = self.loading['sdl'] or 0.0
-		ll  = self.loading['ll_design'] or 0.0
-		self.mass = (((self.h / 12. * self.w_c) + (sdl + ll)) * self.l_1 * self.l_2) / 32.2 # lb sec2/ft
+		ll  = self.loading['ll_vib'] or 0.0
+		self.mass = ((self.h / 12. * self.w_c + sdl + ll) * self.l_1 * self.l_2) / 32.2 # lb sec2/ft
 		self.weight = self.mass * 32.2 # lb
 
 	def calculate_Mn(self, strip_type, location, M_0):
@@ -87,7 +87,6 @@ class TwoWayFlatPlateSlab(object):
 			col_dim = self.c_2
 		w_sdl = self.loading['sdl']
 		w_ll_design  = self.loading['ll_design']
-		w_ll_vib = self.loading['ll_vib']
 		w_dl = self.w_c * self.h / 12. + w_sdl
 		w_ll = w_ll_design
 		if span == 'l_1':
@@ -217,11 +216,11 @@ class TwoWayFlatPlateSlab(object):
 			k_2 = 1.9
 		# calculate lambda_i_sq - allow linear interpolation
 		lambda_i_sq = interp(self.l_ratio, [1.0, 1.5, 2.0], [7.12, 8.92, 9.29])
-		sdl = self.loading['sdl']
-		ll  = self.loading['ll_vib']
+		print(self.mass)
 		gamma = self.mass / (self.l_1 * self.l_2) # slug / ft2
 		self.f_i = k_2 * lambda_i_sq / (2 * pi * self.l_1 ** 2.0) * \
 				   (k_1 * self.E_c * 144 * (self.h / 12.) ** 3.0 / (12 * gamma * (1 - self.nu ** 2.0))) ** 0.5
+		print(lambda_i_sq, k_2, gamma)
 		return round(self.f_i, 1)
 
 	def calculate_delta_p(self):
