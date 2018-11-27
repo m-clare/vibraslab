@@ -6,8 +6,12 @@ class TwoWayFlatPlateSlab(object):
 	'''
 
 	def __init__(self, l_1, l_2, h, f_c, f_y, w_c, nu, col_size, loading=None, reinforcement=None, floor_type='rc'):
-		self.l_1 = l_1
-		self.l_2 = l_2
+		if l_2 > l_1:
+			self.l_1 = l_2
+			self.l_2 = l_1 
+		else:
+			self.l_1 = l_1
+			self.l_2 = l_2
 		self.h = h
 		self.f_c = f_c
 		self.c_b = col_size['b']
@@ -228,7 +232,7 @@ class TwoWayFlatPlateSlab(object):
 		if self.l_ratio == 1.0:
 			# square panel
 			I_e = 0.7 * I_m + 0.15 * (I_e1 + I_e2)
-		else: 
+		else:
 			I_e = self.calculate_panel_I_e()
 			I_g = self.calculate_panel_I_g()
 			self.k_1 = I_e / I_g
@@ -259,6 +263,5 @@ if __name__ == "__main__":
 			   'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}}}
 	test = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'b': 22., 'h': 22.}, 
 		 				       loading=loading, reinforcement=reinf)
-	print(test.calculate_f_i())
 
 
