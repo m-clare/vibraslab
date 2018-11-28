@@ -106,8 +106,9 @@ if __name__ == "__main__":
 	loading = {'sdl': 20., 'll_design': 65., 'll_vib': 11.}
 	reinf   = {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
 			   'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}}}
+	bay = {'l_1': 'interior', 'l_2': 'interior'}
 	floor = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'c1': 22., 'c2': 22.}, 
-		 				       loading=loading, reinforcement=reinf)
+		 				       bay=bay, loading=loading, reinforcement=reinf)
 	fn = floor.calculate_f_i()
 	delta_p = floor.calculate_delta_p()
 

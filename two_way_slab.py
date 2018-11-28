@@ -2,16 +2,18 @@ from numpy import sqrt, pi, roots, array, shape, zeros, interp, tanh, cosh
 
 class TwoWayFlatPlateSlab(object):
 	'''
-	NOTE THIS IS ONLY FOR INTERIOR BAY CURRENTLY WITH CONTINUOUS SPANS
+	Calculate the vibration characteristics of a 2 way flat slab for interior/exterior bays only without beams
+	between interior supports (no edge beam)
 	'''
 
-	def __init__(self, l_1, l_2, h, f_c, f_y, w_c, nu, col_size, loading=None, reinforcement=None, floor_type='rc'):
+	def __init__(self, l_1, l_2, h, f_c, f_y, w_c, nu, col_size, bay, loading=None, reinforcement=None, floor_type='rc'):
 		self.l_1 = l_1
 		self.l_2 = l_2
 		self.h = h
 		self.f_c = f_c
 		self.c_1 = col_size['c1']
 		self.c_2 = col_size['c2']
+		self.bay = bay or {}
 		self.l_ratio = self.l_1 / self.l_2
 		self.f_y = f_y
 		self.w_c = w_c
@@ -39,10 +41,11 @@ class TwoWayFlatPlateSlab(object):
 		self.f_r = 4.5 * self.lambda_cw * sqrt(f_c)
 
 		# set strip widths
+		# WHAT DOES THIS MEAN FOR EXTERIOR STRIPS?
 		self.strips = {'l_1': {}, 'l_2': {}}
 		col_width   = min(0.25 * self.l_1, 0.25 * self.l_2) * 2.
-		self.strips['l_1']['column'] = col_width 
-		self.strips['l_2']['column'] = col_width 
+		for bay, value in self.bay.items():
+			self.strips[bay]['column'] = col_width 
 		self.strips['l_1']['middle'] = self.l_2 - col_width 
 		self.strips['l_2']['middle'] = self.l_1 - col_width 
 
@@ -52,22 +55,53 @@ class TwoWayFlatPlateSlab(object):
 		self.mass = ((self.h / 12. * self.w_c + sdl + ll) * self.l_1 * self.l_2) / 32.2 # lb sec2/ft
 		self.weight = self.mass * 32.2 # lb
 
-	def calculate_Mn(self, strip_type, location, M_0):
+	def calculate_Mn(self, strip_type, location, bay, M_0):
 		'''
 		Calculates design moment based on continuous interior span
+		Needs to be generalized for all span conditions...
 		'''
-		if strip_type == 'middle' and location == 'p':
-			p_moment    = 0.35
-			dist_factor = 0.4
-		elif strip_type == 'middle' and location == 'n':
-			p_moment    = 0.65
-			dist_factor = 0.25
-		elif strip_type == 'column' and location == 'p':
-			p_moment    = 0.35
-			dist_factor = 0.6
-		elif strip_type == 'column' and location == 'n':
-			p_moment    = 0.65
-			dist_factor = 0.75
+		if bay == 'interior':
+			if strip_type == 'middle' and location == 'p':
+				p_moment    = 0.35
+				dist_factor = 0.4
+			elif strip_type == 'middle' and location == 'n1':
+				p_moment    = 0.65
+				dist_factor = 0.25
+			elif strip_type == 'middle' and location == 'n2':
+				p_moment    = 0.65
+				dist_factor = 0.25
+			elif strip_type == 'column' and location == 'p':
+				p_moment    = 0.35
+				dist_factor = 0.6
+			elif strip_type == 'column' and location == 'n1':
+				p_moment    = 0.65
+				dist_factor = 0.75
+			elif strip_type == 'column' and location == 'n2':
+				p_moment    = 0.65
+				dist_factor = 0.75
+			else:
+				raise NameError
+		elif bay == 'exterior':
+			if strip_type == 'middle' and location == 'p':
+				p_moment    = 0.52
+				dist_factor = 0.4
+			elif strip_type == 'middle' and location == 'n1': # n1 is exterior Neg Mu
+				p_moment    = 0.7
+				dist_factor = 0.0
+			elif strip_type == 'middle' and location == 'n2': # n2 is interior Neg Mu
+				p_moment    = 0.26
+				dist_factor = 0.25
+			elif strip_type == 'column' and location == 'p':
+				p_moment    = 0.52
+				dist_factor = 0.6
+			elif strip_type == 'column' and location == 'n1':
+				p_moment    = 0.7
+				dist_factor = 1.0
+			elif strip_type == 'column' and location == 'n2':
+				p_moment    = 0.26
+				dist_factor = 0.75
+			else:
+				raise NameError
 		else:
 			raise NameError
 		return round(p_moment * dist_factor * M_0 * 0.001, 1)
@@ -97,21 +131,21 @@ class TwoWayFlatPlateSlab(object):
 			l_span = self.l_2
 		M_0_dl = w_dl * l_trans * (l_span - col_dim / 12.) ** 2.0 / 8.
 		M_0_ll = w_ll * l_trans * (l_span- col_dim / 12.) ** 2.0 / 8.
-		load_out = {'service': {'column': {'n': {}, 'p': {}}, 
-								'middle': {'n': {}, 'p': {}}},
-					'factored': {'column': {'n': 0.0, 'p': 0.0}, 
-								'middle':  {'n': 0.0, 'p': 0.0}}}
+		load_out = {'service': {'column': {'n1': {}, 'n2': {}, 'p': {}}, 
+								'middle': {'n1': {}, 'n2': {}, 'p': {}}},
+					'factored': {'column': {'n1': 0.0, 'n2': 0.0, 'p': 0.0}, 
+								'middle':  {'n1': 0.0, 'n2': 0.0, 'p': 0.0}}}
 		service = load_out['service']
 		strip_types = ['column', 'middle']
-		moments = ['p', 'n']
+		moments = ['p', 'n1', 'n2']
 		load_type = ['dl', 'll']
 		for strip in strip_types:
 			for moment in moments:
 				for load in load_type:
 					if load == 'dl':
-						service[strip][moment][load] = self.calculate_Mn(strip, moment, M_0_dl)
+						service[strip][moment][load] = self.calculate_Mn(strip, moment, self.bay[span], M_0_dl)
 					if load == 'll':
-						service[strip][moment][load] = self.calculate_Mn(strip, moment, M_0_ll)
+						service[strip][moment][load] = self.calculate_Mn(strip, moment, self.bay[span], M_0_ll)
 		# Factored moments
 		factored = load_out['factored']
 		for strip in strip_types:
@@ -142,7 +176,9 @@ class TwoWayFlatPlateSlab(object):
 		p[0] = strip_width * 12 * 0.5
 		p[1] = self.n * As
 		p[2] = -self.n * As * d
-		kd   = max(roots(p)) # error handling??
+		kd   = max(roots(p))
+		if kd < 0.0:
+			raise ValueError
 		I_cr = strip_width * 12 * kd ** 3.0 / 3 + self.n * As * (d - kd) ** 2.0
 		I_cr = min(I_cr, I_g)
 		M_cr = self.f_r * I_g / y_t * 1 / 12000. # ft-kips
@@ -163,15 +199,21 @@ class TwoWayFlatPlateSlab(object):
 	def calculate_avg_strip_I_e(self, span, strip_type):
 		strip_options = ['column', 'middle']
 		if strip_type not in strip_options:
-			raise ValueError
+			raise NameError
 		bending_moment = self.calculate_bending_moments(span)
-		bm_p = sum(bending_moment['service'][strip_type]['p'].values())
-		bm_n = sum(bending_moment['service'][strip_type]['n'].values())
+		bm_p  = sum(bending_moment['service'][strip_type]['p'].values())
+		bm_n1 = sum(bending_moment['service'][strip_type]['n1'].values())
+		bm_n2 = sum(bending_moment['service'][strip_type]['n2'].values())
 		reinf_p = self.reinforcement[span][strip_type]['p']
-		reinf_n = self.reinforcement[span][strip_type]['n']
+		if 'n' in self.reinforcement[span][strip_type]:
+			reinf_n1 = self.reinforcement[span][strip_type]['n']
+			reinf_n2 = reinf_n1
+		else:
+			reinf_n1 = self.reinforcement[span][strip_type]['n1']
+			reinf_n2 = self.reinforcement[span][strip_type]['n2']	
 		I_m  = self.calculate_strip_I_e(self.strips[span][strip_type], bm_p, reinf_p)
-		I_e1 = self.calculate_strip_I_e(self.strips[span][strip_type], bm_n, reinf_n)
-		I_e2 = I_e1 # when would this differ?
+		I_e1 = self.calculate_strip_I_e(self.strips[span][strip_type], bm_n1, reinf_n1)
+		I_e2 = self.calculate_strip_I_e(self.strips[span][strip_type], bm_n2, reinf_n2)
 		I_e  = 0.7 * I_m + 0.15 * (I_e1 + I_e2) # Eqn 4.19
 		return I_e
 
@@ -216,11 +258,9 @@ class TwoWayFlatPlateSlab(object):
 			k_2 = 1.9
 		# calculate lambda_i_sq - allow linear interpolation
 		lambda_i_sq = interp(self.l_ratio, [1.0, 1.5, 2.0], [7.12, 8.92, 9.29])
-		print(self.mass)
 		gamma = self.mass / (self.l_1 * self.l_2) # slug / ft2
 		self.f_i = k_2 * lambda_i_sq / (2 * pi * self.l_1 ** 2.0) * \
 				   (k_1 * self.E_c * 144 * (self.h / 12.) ** 3.0 / (12 * gamma * (1 - self.nu ** 2.0))) ** 0.5
-		print(lambda_i_sq, k_2, gamma)
 		return round(self.f_i, 1)
 
 	def calculate_delta_p(self):
@@ -244,11 +284,41 @@ class TwoWayFlatPlateSlab(object):
 
 if __name__ == "__main__":
 	# l_1 must be longer span, l_2 must be shorter span
+	# Example 5.3 CRSI Design Guide
+	d5_3 = {'loading': {'sdl': 20., 'll_design': 65., 'll_vib': 11.},
+			'reinf': {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
+			      	  'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}}},
+			 'l_1': 25., 'l_2': 20., 'h': 9.5, 'f_c': 4000, 'f_y': 60000, 'w_c': 150, 'nu': 0.2, 
+			 'col_size': {'c1': 22., 'c2': 22.}, 'bay': {'l_1': 'interior', 'l_2': 'interior'}}
+	ex5_3 = TwoWayFlatPlateSlab(l_1=d5_3['l_1'], l_2=d5_3['l_2'], h=d5_3['h'], 
+								f_c=d5_3['f_c'], f_y=d5_3['f_y'], w_c=d5_3['w_c'], nu=d5_3['nu'], col_size=d5_3['col_size'], 
+		 				        bay=d5_3['bay'], loading=d5_3['loading'], reinforcement=d5_3['reinf'])
+	print(ex5_3.calculate_k_1())
+	print(ex5_3.calculate_f_i())
+	# Example 5.5 CRSI Design Guide Two Way Joist (Equivalent Slab)
+	d5_5 = {'loading': {'sdl': 20., 'll_design': 150., 'll_vib': 11.},
+			'reinf': {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
+			      	  'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}}},
+			 'l_1': 30., 'l_2': 30., 'h': 10.3, 'f_c': 4000, 'f_y': 60000, 'w_c': 150, 'nu': 0.2, 
+			 'col_size': {'c1': 34., 'c2': 34.}, 'bay': {'l_1': 'interior', 'l_2': 'interior'}}
+	ex5_5 = TwoWayFlatPlateSlab(l_1=d5_5['l_1'], l_2=d5_5['l_2'], h=d5_5['h'], 
+								f_c=d5_5['f_c'], f_y=d5_5['f_y'], w_c=d5_5['w_c'], nu=d5_5['nu'], col_size=d5_5['col_size'], 
+		 				        bay=d5_5['bay'], loading=d5_5['loading'], reinforcement=d5_5['reinf'])
+	ex5_5.mass = 4038.4
+	print(ex5_5.calculate_k_1())
+	print(ex5_5.calculate_f_i())
+
+	reinf1  = {'l_1': {'column': {'n1': 12.72, 'n2': 6.88, 'p': 7.39}, 'middle': {'n1': 6.88, 'n2': 6.88, 'p': 6.88}},
+			   'l_2': {'column': {'n': 11.78, 'p': 6.88}, 'middle': {'n': 6.88, 'p': 6.88}}}
+	bay = {'l_1': 'interior', 'l_2': 'interior'}
+	bay_5_3 = {'l_1': 'interior', 'l_2': 'interior'}
 	loading = {'sdl': 20., 'll_design': 65., 'll_vib': 11.}
-	reinf   = {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
-			   'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}}}
-	test = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'c1': 22., 'c2': 22.}, 
-		 				       loading=loading, reinforcement=reinf)
-	print(test.calculate_f_i())
+	test2 = TwoWayFlatPlateSlab(l_1=32.0, l_2=32.0, h=14, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'c1': 30., 'c2': 30.}, 
+		 				        bay=bay, loading=loading, reinforcement=reinf1)
+	b1 = test2.calculate_bending_moments('l_1')
+	b2 = test2.calculate_bending_moments('l_2')
+	print('l_1', b1['factored'])
+	print('l_2', b2['factored'])
+	print(test2.calculate_f_i())
 
 
