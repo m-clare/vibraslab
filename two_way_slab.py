@@ -4,6 +4,7 @@ class TwoWayFlatPlateSlab(object):
 	'''
 	Calculate the vibration characteristics of a 2 way flat slab for interior/exterior bays only without beams
 	between interior supports (no edge beam)
+	Note: This assumes that the Direct Design Criteria by ACI have been fulfilled
 	'''
 
 	def __init__(self, l_1, l_2, h, f_c, f_y, w_c, nu, col_size, bay, loading=None, reinforcement=None, floor_type='rc'):
@@ -53,7 +54,6 @@ class TwoWayFlatPlateSlab(object):
 		sdl = self.loading['sdl'] or 0.0
 		ll  = self.loading['ll_vib'] or 0.0
 		self.mass = ((self.h / 12. * self.w_c + sdl + ll) * self.l_1 * self.l_2) / 32.2 # lb sec2/ft
-		print(self.mass)
 		self.weight = self.mass * 32.2 / 1000. # kips
 
 	def calculate_Mn(self, strip_type, location, bay, M_0):
@@ -310,6 +310,14 @@ if __name__ == "__main__":
 	print(ex5_3.calculate_bending_moments('l_2'))
 	print(ex5_3.mass)
 	print(ex5_3.I_e)
+	# Parameters to experiment with:
+	# Slab reinforcment (implement as reinforcement ratio rather than As)
+	# Column size
+	# Stiffness variation between column and middle strip (i.e. reinforcement)
+	# Creep/Post Tensioning considerations
+	# Drop panel estimation of equivalent slab based on voids?
+	# LL should be 80
+	# Check LL against AISC comparison
 	# # print(ex5_3.calculate_k_1())
 	# # print(ex5_3.calculate_f_i())
 	# print()
