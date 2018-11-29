@@ -53,10 +53,11 @@ def check_sensitive_equip_steel(floor_fn, eff_weight, damping, manufacturer_limi
 				else: # linear interpolate between equations
 					V_13_f_L = eqn_6_3b(f_step, f_L, damping, gamma, eff_weight)
 					V_13_f_U = eqn_6_3a(f_step, f_U, damping, eff_weight)
-					V_13  = round(interp(floor_fn, [f_L, f_U], [V_13_f_U, V_13_f_L]), 0)
+					V_13  = round(interp(floor_fn, [f_L, f_U], [V_13_f_L, V_13_f_U]), 0)
 			else:
 				# very slow
 				V_13 = eqn_6_3a(f_step, floor_fn, damping, eff_weight)
+			V_13_out[speed] = {}
 			V_13_out[speed]['V_13'] = V_13
 			if V_13 > limit:
 				V_13_out[speed]['crit'] = 'fail'
@@ -87,7 +88,7 @@ def check_sensitive_equip_concrete(floor_fn, delta_p, manufacturer_limit=None, l
 		for pace in footfall_impulse_parameters:
 			parameters = footfall_impulse_parameters[pace]
 			f_0 = parameters['f_0']
-			if floor_fn / f_0 > 1.0: # should be >> 0.5
+			if floor_fn / f_0 > 0.5: # should be >> 0.5
 				U_v = parameters['U_v']
 				V = delta_p * U_v / floor_fn
 			else:
@@ -110,7 +111,12 @@ if __name__ == "__main__":
 	floor = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'c1': 22., 'c2': 22.}, 
 		 				       bay=bay, loading=loading, reinforcement=reinf)
 	fn = floor.calculate_f_i()
+	fw = floor.weight
+	print(fw)
 	delta_p = floor.calculate_delta_p()
-
-	print(check_sensitive_equip_concrete(8.6, 4.659e-6, manufacturer_limit=None, limit_type='maximum velocity', limit_app='Operating rooms')) # does not allow for accounting for location!
-	print(check_sensitive_equip_concrete(fn, delta_p, manufacturer_limit=7000, limit_type='maximum velocity')) # does not allow for accounting for location!
+	test = check_sensitive_equip_steel(7.17, 74.5, 0.03, manufacturer_limit=6000, limit_type='one-third octave velocity')
+	print(test)
+	# test_c = check_sensitive_equip_concrete(fn, delta_p, manufacturer_limit=6000, limit_type='maximum velocity')
+	# test_s = check_sensitive_equip_steel(fn, fw, 0.03, manufacturer_limit=6000, limit_type='one-third octave velocity')
+	# print(test_c)
+	# print(test_s)
