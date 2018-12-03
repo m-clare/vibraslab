@@ -18,7 +18,7 @@ def check_sensitive_equip_steel(floor_fn, eff_weight, damping, manufacturer_limi
 					  	  'moderate': {'f_step': 1.85, 'f_4max': 8.0, 'f_L': 7., 'f_U': 9, 'gamma': 0.09},
 					  	  'fast': {'f_step': 2.1, 'f_4max': 8.8, 'f_L': 8., 'f_U': 10, 'gamma': 0.08}}
 
-	limit_types = ['one-third octave velocity', 'one-third octave acceleration', 'peak velocity', 'peak acceleration', 
+	limit_types = ['generic velocity', 'one-third octave acceleration', 'peak velocity', 'peak acceleration', 
 				   'narrowband spectral velocity', 'narrowband spectral acceleration']
 
 	def eqn_6_3a(f_step, f_n, beta, W):
@@ -35,7 +35,7 @@ def check_sensitive_equip_steel(floor_fn, eff_weight, damping, manufacturer_limi
 		limit = manufacturer_limit
 	else:
 		limit = vibration_crit_limits[limit_app]
-	if limit_type == 'one-third octave velocity':
+	if limit_type == 'generic velocity':
 		V_13_out = {}
 		for speed in walking_parameters:
 			# Check if low or high frequency floor
@@ -106,7 +106,8 @@ if __name__ == "__main__":
 	# l_1 must be longer span, l_2 must be shorter span
 	loading = {'sdl': 20., 'll_design': 65., 'll_vib': 11.}
 	reinf   = {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
-			   'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}}}
+			   'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}},
+			   'type': 'As'}
 	bay = {'l_1': 'interior', 'l_2': 'interior'}
 	floor = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'c1': 22., 'c2': 22.}, 
 		 				       bay=bay, loading=loading, reinforcement=reinf)
@@ -114,8 +115,9 @@ if __name__ == "__main__":
 	fw = floor.weight
 	print(fw)
 	delta_p = floor.calculate_delta_p()
-	test = check_sensitive_equip_steel(7.17, 74.5, 0.03, manufacturer_limit=6000, limit_type='one-third octave velocity')
+	test = check_sensitive_equip_steel(7.17, 74.5, 0.03, manufacturer_limit=6000, limit_type='generic velocity')
 	print(test)
+	
 	# test_c = check_sensitive_equip_concrete(fn, delta_p, manufacturer_limit=6000, limit_type='maximum velocity')
 	# test_s = check_sensitive_equip_steel(fn, fw, 0.03, manufacturer_limit=6000, limit_type='one-third octave velocity')
 	# print(test_c)
