@@ -251,23 +251,21 @@ class TwoWayFlatPlateSlab(object):
 		bm_n1 = sum(bm['service'][strip_type]['n1'].values())
 		bm_n2 = sum(bm['service'][strip_type]['n2'].values())
 
-		if not self.reinforcement or strip_type not in self.reinforcement[span] or span not in self.reinforcement:
+		if 'type' not in self.reinforcement or self.reinforcement['type'] == 'estimated':
 			M_up  = bm['factored'][strip_type]['p']
 			M_un1 = bm['factored'][strip_type]['n1']
 			M_un2 = bm['factored'][strip_type]['n2']
 			reinf_p = self.estimate_As(self.strips[span][strip_type], M_up)
 			reinf_n1 = self.estimate_As(self.strips[span][strip_type], M_un1)
 			reinf_n2 = self.estimate_As(self.strips[span][strip_type], M_un2)
-			# need to fix adding reinforcement!
-			if not self.reinforcement:
-				self.reinforcement.update({span: {strip_type: {}}})
-			else:
+			try:
 				self.reinforcement[span][strip_type] = {}
+			except KeyError:
+				self.reinforcement.update({span: {strip_type: {}}})
 			self.reinforcement[span][strip_type]['p'] = reinf_p
 			self.reinforcement[span][strip_type]['n1'] = reinf_n1
 			self.reinforcement[span][strip_type]['n2'] = reinf_n2
-			print(span, strip_type)
-			# self.reinforcement['type'] = 'As'
+			self.reinforcement['type'] = 'estimated'
 		elif self.reinforcement['type'] == 'As':
 			reinf_p = self.reinforcement[span][strip_type]['p']
 			if 'n' in self.reinforcement[span][strip_type]:
