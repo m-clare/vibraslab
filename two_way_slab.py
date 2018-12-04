@@ -277,70 +277,24 @@ class TwoWayFlatPlateSlab(object):
 	def calculate_avg_strip_I_e(self, span, strip_type):
 		strip_options = ['column', 'middle']
 		locations = ['p', 'n1', 'n2']
+		I_e_map = {'p': 'I_m', 'n1': 'I_e1', 'n2': 'I_e2'}
 		if strip_type not in strip_options:
 			raise NameError
-		bm = self.bending_moments[span]
-		bm_p  = sum(bm['service'][strip_type]['p'].values())
-		bm_n1 = sum(bm['service'][strip_type]['n1'].values())
-		bm_n2 = sum(bm['service'][strip_type]['n2'].values())
-		if 'type' not in self.reinforcement or self.reinforcement['type'] == 'estimated':
-			M_up  = bm['factored'][strip_type]['p']
-			M_un1 = bm['factored'][strip_type]['n1']
-			M_un2 = bm['factored'][strip_type]['n2']
-			reinf_p = self.estimate_As(self.strips[span][strip_type], M_up)
-			reinf_n1 = self.estimate_As(self.strips[span][strip_type], M_un1)
-			reinf_n2 = self.estimate_As(self.strips[span][strip_type], M_un2)
-			for location in locations:
-				try:
-					self.reinforcement[span][strip_type]['p'] = reinf_p
-					self.reinforcement[span][strip_type]['n1'] = reinf_n1
-					self.reinforcement[span][strip_type]['n2'] = reinf_n2
-				except KeyError:
-					self.reinforcement.update({span: {strip_type: {}}})
-					self.reinforcement[span][strip_type]['p'] = reinf_p
-					self.reinforcement[span][strip_type]['n1'] = reinf_n1
-					self.reinforcement[span][strip_type]['n2'] = reinf_n2
-			self.reinforcement['type'] = 'estimated'
-		elif self.reinforcement['type'] == 'As':
-			reinf_p = self.reinforcement[span][strip_type]['p']
-			if 'n' in self.reinforcement[span][strip_type]:
-				reinf_n1 = self.reinforcement[span][strip_type]['n']
-				reinf_n2 = reinf_n1
-			else:
-				reinf_n1 = self.reinforcement[span][strip_type]['n1']
-				reinf_n2 = self.reinforcement[span][strip_type]['n2']
-			for location in locations:
-				try:
-					self.reinforcement[span][strip_type]['p'] = reinf_p
-					self.reinforcement[span][strip_type]['n1'] = reinf_n1
-					self.reinforcement[span][strip_type]['n2'] = reinf_n2
-				except KeyError:
-					self.reinforcement.update({span: {strip_type: {}}})
-					self.reinforcement[span][strip_type]['p'] = reinf_p
-					self.reinforcement[span][strip_type]['n1'] = reinf_n1
-					self.reinforcement[span][strip_type]['n2'] = reinf_n2	
-		elif self.reinforcement['type'] == 'rho':
-			reinf_p = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type]['p'], d=None)
-			if 'n' in self.reinforcement[span][strip_type]:
-				reinf_n1 = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type]['n'], d=None)
-				reinf_n2 = reinf_n1
-			else:
-				reinf_n1 = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type]['n1'], d=None)
-				reinf_n2 = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type]['n2'], d=None)
-		# set rho
-		for loc in locations:
-			strip_width = self.strips[span][strip_type]
-			As = self.reinforcement[span][strip_type][loc]
-			try:
-				self.rho[span][strip_type][loc] = round(self.calculate_rho_from_As(strip_width, As, d=None), 5)
-			except KeyError:
-				self.rho.update({span: {strip_type: {}}})
-			self.rho[span][strip_type][loc] = round(self.calculate_rho_from_As(strip_width, As, d=None), 5)
-		print(span, strip_type, reinf_p, reinf_n1, reinf_n2)
-		I_m  = self.calculate_strip_I_e(self.strips[span][strip_type], bm_p, reinf_p)
-		I_e1 = self.calculate_strip_I_e(self.strips[span][strip_type], bm_n1, reinf_n1)
-		I_e2 = self.calculate_strip_I_e(self.strips[span][strip_type], bm_n2, reinf_n2)
-		I_e  = 0.7 * I_m + 0.15 * (I_e1 + I_e2) # Eqn 4.19
+		I_eff = {}
+		for location in locations:
+			bm = sum(self.bending_moments[span]['service'][strip_type][location].values())
+			if 'type' not in self.reinforcement or self.reinforcement['type'] == 'estimated':
+				M_u   = self.bending_moments[span]['factored'][strip_type][location]
+				reinf = self.estimate_As(self.strips[span][strip_type], M_u)
+				self.reinforcement['type'] = 'estimated' 
+			elif self.reinforcement['type'] == 'As':
+				reinf = self.reinforcement[span][strip_type][location]
+			elif self.reinforcement['type'] == 'rho':
+				strip_width = self.strips[span][strip_type]
+				reinf = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type][location])
+			I_e = self.calculate_strip_I_e(self.strips[span][strip_type], bm, reinf)
+			I_eff[I_e_map[location]] = I_e
+		I_e  = 0.7 * I_eff['I_m'] + 0.15 * (I_eff['I_e1'] + I_eff['I_e2']) # Eqn 4.19
 		return I_e
 
 	def calculate_panel_I_e(self):
