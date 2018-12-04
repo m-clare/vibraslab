@@ -48,6 +48,10 @@ class TwoWayFlatPlateSlab(object):
 		except KeyError:
 			pass
 
+		if not self.rho:
+			self.rho = {'l_1': {'column': {}, 'middle': {}},
+						'l_2': {'column': {}, 'middle': {}}}
+
 		# set modulus of elasticity
 		if w_c >= 90 and w_c <= 160:
 			self.E_c = w_c ** 1.5 * 33 * sqrt(f_c)
@@ -282,17 +286,18 @@ class TwoWayFlatPlateSlab(object):
 			raise NameError
 		I_eff = {}
 		for location in locations:
+			strip_width = self.strips[span][strip_type]
 			bm = sum(self.bending_moments[span]['service'][strip_type][location].values())
 			if 'type' not in self.reinforcement or self.reinforcement['type'] == 'estimated':
 				M_u   = self.bending_moments[span]['factored'][strip_type][location]
-				reinf = self.estimate_As(self.strips[span][strip_type], M_u)
+				As = self.estimate_As(self.strips[span][strip_type], M_u)
 				self.reinforcement['type'] = 'estimated' 
 			elif self.reinforcement['type'] == 'As':
-				reinf = self.reinforcement[span][strip_type][location]
-			elif self.reinforcement['type'] == 'rho':
-				strip_width = self.strips[span][strip_type]
-				reinf = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type][location])
-			I_e = self.calculate_strip_I_e(self.strips[span][strip_type], bm, reinf)
+				As = self.reinforcement[span][strip_type][location]
+			elif self.reinforcement['type'] == 'rho':	
+				As = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type][location])
+			self.rho[span][strip_type][location] = round(self.calculate_rho_from_As(strip_width, As), 5)
+			I_e = self.calculate_strip_I_e(strip_width, bm, As)
 			I_eff[I_e_map[location]] = I_e
 		I_e  = 0.7 * I_eff['I_m'] + 0.15 * (I_eff['I_e1'] + I_eff['I_e2']) # Eqn 4.19
 		return I_e
