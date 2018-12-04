@@ -1,8 +1,24 @@
-from numpy import sqrt, pi, roots, array, shape, zeros, interp, tanh, cosh
+from numpy import sqrt
+from numpy import pi
+from numpy import roots
+from numpy import zeros
+from numpy import interp
+from numpy import tanh
+from numpy import cosh
+
+def check_R(f_c, R):
+	table_A5a = {5000: {30: 0.0005, 60: 0.0010, 89: 0.0015, 118: 0.0020, 147: 0.0025, 
+						176: 0.003, 205: 0.0035, 233: 0.004, 261: 0.0045, 289: 0.0050, 
+						317: 0.0055, 345: 0.0060, 372: 0.0065, 399: 0.0070, 426: 0.0075}}
+	# interpolate between values
+	rho = interp(R, [30, 60, 89, 118, 147, 176, 205, 233, 261, 289, 317, 345, 372, 399, 426],
+					[0.0005, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005,
+					 0.0055, 0.0060, 0.0065, 0.0070, 0.0075])
+	return rho
 
 class TwoWayFlatPlateSlab(object):
 	'''
-	Calculate the vibration characteristics of a 2 way flat slab for interior/exterior bays only without beams
+	Calculate the vibration characteristics (fundamental frequency) of a 2 way flat slab for interior/exterior bays only without beams
 	between interior supports (no edge beam)
 	Note: This assumes that the Direct Design Criteria by ACI have been fulfilled
 	'''
@@ -21,6 +37,16 @@ class TwoWayFlatPlateSlab(object):
 		self.nu  = nu # Poisson's ratio
 		self.loading = loading or {}
 		self.reinforcement = reinforcement or {}
+		self.phi = 0.9 # want tension controlled section
+
+		# set reinforcement ratios (if they exist)
+		self.rho = {}
+		try:
+			if self.reinforcement['type'] == 'rho':
+				self.rho['l_1'] = self.reinforcement['l_1']
+				self.rho['l_2'] = self.reinforcement['l_2']
+		except KeyError:
+			pass
 
 		# set modulus of elasticity
 		if w_c >= 90 and w_c <= 160:
@@ -221,36 +247,42 @@ class TwoWayFlatPlateSlab(object):
 			cover = 0.75
 			bar_guess = 1.0
 			d = self.h - cover - 0.5 * bar_guess
-		return rho * strip_width * 12 * self.h
+		return rho * strip_width * 12 * d
 
 	def estimate_As(self, strip_width, M_u, d=None):
 		if d == None:
 			cover = 0.75
 			bar_guess = 1.0
 			d = self.h - cover - 0.5 * bar_guess
-		As = max(M_u * 12000 / d * 0.85 / 54000., 0.0025 * strip_width * 12. * d) # still need check?
+		As = max(M_u * 12000 / d * 0.85 / 54000., 0.0025 * strip_width * 12. * d ) # still need check?
+		Mu_ft = M_u / strip_width
+		R  = Mu_ft * 12000 / (self.phi * 12 * d ** 2.0)
+		rho_R = check_R(self.f_c, R)
 		# check As against min and max
 		if self.f_y < 60000:
 			As_min = 0.002 * strip_width * 12 * self.h
-		else:
+		else: # THIS NEEDS TO BE CHECKED...
 			As_min = max(0.0018 * 60000 / self.f_y * strip_width * 12 * self.h, 0.0014 * strip_width * 12 * self.h)
 		if As < As_min:
 			As = As_min
+			print('As is from As_min')
 		As_max = self.calculate_As_from_rho(strip_width, self.rho_max, d=None)
 		if As > As_max:
 			print('As > As_max')
 			As = As_max
+		rho = self.calculate_rho_from_As(strip_width, As)
+		print('rho_max:', self.rho_max, 'rho_R:', rho_R, 'rho_est:', rho)
 		return round(As, 2) 
 
 	def calculate_avg_strip_I_e(self, span, strip_type):
 		strip_options = ['column', 'middle']
+		locations = ['p', 'n1', 'n2']
 		if strip_type not in strip_options:
 			raise NameError
 		bm = self.bending_moments[span]
 		bm_p  = sum(bm['service'][strip_type]['p'].values())
 		bm_n1 = sum(bm['service'][strip_type]['n1'].values())
 		bm_n2 = sum(bm['service'][strip_type]['n2'].values())
-
 		if 'type' not in self.reinforcement or self.reinforcement['type'] == 'estimated':
 			M_up  = bm['factored'][strip_type]['p']
 			M_un1 = bm['factored'][strip_type]['n1']
@@ -258,13 +290,16 @@ class TwoWayFlatPlateSlab(object):
 			reinf_p = self.estimate_As(self.strips[span][strip_type], M_up)
 			reinf_n1 = self.estimate_As(self.strips[span][strip_type], M_un1)
 			reinf_n2 = self.estimate_As(self.strips[span][strip_type], M_un2)
-			try:
-				self.reinforcement[span][strip_type] = {}
-			except KeyError:
-				self.reinforcement.update({span: {strip_type: {}}})
-			self.reinforcement[span][strip_type]['p'] = reinf_p
-			self.reinforcement[span][strip_type]['n1'] = reinf_n1
-			self.reinforcement[span][strip_type]['n2'] = reinf_n2
+			for location in locations:
+				try:
+					self.reinforcement[span][strip_type]['p'] = reinf_p
+					self.reinforcement[span][strip_type]['n1'] = reinf_n1
+					self.reinforcement[span][strip_type]['n2'] = reinf_n2
+				except KeyError:
+					self.reinforcement.update({span: {strip_type: {}}})
+					self.reinforcement[span][strip_type]['p'] = reinf_p
+					self.reinforcement[span][strip_type]['n1'] = reinf_n1
+					self.reinforcement[span][strip_type]['n2'] = reinf_n2
 			self.reinforcement['type'] = 'estimated'
 		elif self.reinforcement['type'] == 'As':
 			reinf_p = self.reinforcement[span][strip_type]['p']
@@ -273,7 +308,17 @@ class TwoWayFlatPlateSlab(object):
 				reinf_n2 = reinf_n1
 			else:
 				reinf_n1 = self.reinforcement[span][strip_type]['n1']
-				reinf_n2 = self.reinforcement[span][strip_type]['n2']	
+				reinf_n2 = self.reinforcement[span][strip_type]['n2']
+			for location in locations:
+				try:
+					self.reinforcement[span][strip_type]['p'] = reinf_p
+					self.reinforcement[span][strip_type]['n1'] = reinf_n1
+					self.reinforcement[span][strip_type]['n2'] = reinf_n2
+				except KeyError:
+					self.reinforcement.update({span: {strip_type: {}}})
+					self.reinforcement[span][strip_type]['p'] = reinf_p
+					self.reinforcement[span][strip_type]['n1'] = reinf_n1
+					self.reinforcement[span][strip_type]['n2'] = reinf_n2	
 		elif self.reinforcement['type'] == 'rho':
 			reinf_p = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type]['p'], d=None)
 			if 'n' in self.reinforcement[span][strip_type]:
@@ -282,6 +327,16 @@ class TwoWayFlatPlateSlab(object):
 			else:
 				reinf_n1 = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type]['n1'], d=None)
 				reinf_n2 = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type]['n2'], d=None)
+		# set rho
+		for loc in locations:
+			strip_width = self.strips[span][strip_type]
+			As = self.reinforcement[span][strip_type][loc]
+			try:
+				self.rho[span][strip_type][loc] = round(self.calculate_rho_from_As(strip_width, As, d=None), 5)
+			except KeyError:
+				self.rho.update({span: {strip_type: {}}})
+			self.rho[span][strip_type][loc] = round(self.calculate_rho_from_As(strip_width, As, d=None), 5)
+		print(span, strip_type, reinf_p, reinf_n1, reinf_n2)
 		I_m  = self.calculate_strip_I_e(self.strips[span][strip_type], bm_p, reinf_p)
 		I_e1 = self.calculate_strip_I_e(self.strips[span][strip_type], bm_n1, reinf_n1)
 		I_e2 = self.calculate_strip_I_e(self.strips[span][strip_type], bm_n2, reinf_n2)
@@ -289,15 +344,13 @@ class TwoWayFlatPlateSlab(object):
 		return I_e
 
 	def calculate_panel_I_e(self):
+		I_e_csx = self.calculate_avg_strip_I_e('l_1', 'column')
+		I_e_csy = self.calculate_avg_strip_I_e('l_2', 'column')
+		I_e_msx = self.calculate_avg_strip_I_e('l_1', 'middle')
+		I_e_msy = self.calculate_avg_strip_I_e('l_2', 'middle')
 		if self.l_ratio == 1.0: # square
-			I_e_cs = self.calculate_avg_strip_I_e('l_1', 'column')
-			I_e_ms = self.calculate_avg_strip_I_e('l_2', 'middle') # orthogonal to column strip
-			self.I_e = I_e_cs + I_e_ms
+			self.I_e = I_e_csx + I_e_msy
 		else: # rectangular
-			I_e_csx = self.calculate_avg_strip_I_e('l_1', 'column')
-			I_e_csy = self.calculate_avg_strip_I_e('l_2', 'column')
-			I_e_msx = self.calculate_avg_strip_I_e('l_1', 'middle')
-			I_e_msy = self.calculate_avg_strip_I_e('l_2', 'middle')
 			self.I_e = ((I_e_csx + I_e_msy) + (I_e_csy + I_e_msx)) / 2.0
 		return self.I_e
 
@@ -332,7 +385,6 @@ class TwoWayFlatPlateSlab(object):
 		gamma = self.mass / (self.l_1 * self.l_2) # slug / ft2
 		self.f_i = k_2 * lambda_i_sq / (2 * pi * self.l_1 ** 2.0) * \
 				   (k_1 * self.E_c * 144 * (self.h / 12.) ** 3.0 / (12 * gamma * (1 - self.nu ** 2.0))) ** 0.5
-		print(gamma)
 		return round(self.f_i, 2)
 
 	def calculate_delta_p(self):
@@ -357,6 +409,8 @@ class TwoWayFlatPlateSlab(object):
 		with open(name + '.json', 'w') as fh:
 			json.dump(self.__dict__, fh)
 
+	def from_json(self, fp):
+		raise NotImplementedError
 
 if __name__ == "__main__":
 	import json
@@ -374,24 +428,19 @@ if __name__ == "__main__":
 	# print(d5_3['l_1'], ex5_3.calculate_bending_moments('l_1')['factored'])
 	# print(d5_3['l_2'], ex5_3.calculate_bending_moments('l_2')['factored'])
 	# print(ex5_3.calculate_f_i())
-	# print(ex5_3.calculate_bending_moments('l_1'))
-	# print(ex5_3.calculate_bending_moments('l_2'))
-	# print(ex5_3.mass)
-	# print(ex5_3.I_e)
-	# Example 5.3 CRSI Design Guide
-	d5_3 = {'loading': {'sdl': 21., 'll_design': 125., 'll_vib': 11.},
+	ssm_d = {'loading': {'sdl': 21., 'll_design': 125., 'll_vib': 11.},
 			'reinf': {},
 			 'l_1': 35., 'l_2': 22., 'h': 11, 'f_c': 5000, 'f_y': 60000, 'w_c': 145, 'nu': 0.2, 
 			 'col_size': {'c1': 21., 'c2': 21.}, 'bay': {'l_1': 'exterior', 'l_2': 'interior'}}
-	ex5_3 = TwoWayFlatPlateSlab(l_1=d5_3['l_1'], l_2=d5_3['l_2'], h=d5_3['h'], 
-								f_c=d5_3['f_c'], f_y=d5_3['f_y'], w_c=d5_3['w_c'], nu=d5_3['nu'], col_size=d5_3['col_size'], 
-		 				        bay=d5_3['bay'], loading=d5_3['loading'], reinforcement=d5_3['reinf'])
-	print(ex5_3.bending_moments)
-	print(d5_3['l_1'], ex5_3.calculate_bending_moments('l_1')['factored'])
-	print(d5_3['l_2'], ex5_3.calculate_bending_moments('l_2')['factored'])
-	print(ex5_3.calculate_f_i())
-	s = json.dumps(ex5_3.__dict__)
-	ex5_3.to_json()
+	ssm_ex = TwoWayFlatPlateSlab(l_1=ssm_d['l_1'], l_2=ssm_d['l_2'], h=ssm_d['h'], 
+								f_c=ssm_d['f_c'], f_y=ssm_d['f_y'], w_c=ssm_d['w_c'], nu=ssm_d['nu'], col_size=ssm_d['col_size'], 
+		 				        bay=ssm_d['bay'], loading=ssm_d['loading'], reinforcement=ssm_d['reinf'])
+	print(ssm_ex.calculate_f_i())
+	print(ssm_ex.k_1)
+	print(ssm_ex.weight)
+	print(ssm_ex.I_e)
+	# s = json.dumps(ex5_3.__dict__)
+	# ex5_3.to_json()
 
 	# with open('test.json', 'w') as fh:
 	# 	json.dump(ex5_3.__dict__, fh)
@@ -407,38 +456,6 @@ if __name__ == "__main__":
 	# Drop panel estimation of equivalent slab based on voids?
 	# LL should be 80
 	# Check LL against AISC comparison
-	# max rho should be based on epsilon_t = 0.005
-	# # print(ex5_3.calculate_k_1())
-	# # print(ex5_3.calculate_f_i())
-	# print()
-	# loading = {'sdl': 15., 'll_design': 60., 'll_vib': 11.}
-	# h = 12
-	# slabs = [{'l_1': 30., 'l_2': 30., 
-	# 		 'reinf': {'l_1': {'column': {'n': 10.1, 'p': 4.2}, 'middle': {'n': 3.9, 'p': 3.9}},
-	# 		      	   'l_2': {'column': {'n': 10.1, 'p': 4.2}, 'middle': {'n': 3.9, 'p': 3.9}}}}, 
-	# 		 {'l_1': 32., 'l_2': 32., 
-	# 		 'reinf': {'l_1': {'column': {'n': 12.5, 'p': 5.2}, 'middle': {'n': 4.2, 'p': 4.2}},
-	# 		      	   'l_2': {'column': {'n': 12.5, 'p': 5.2}, 'middle': {'n': 4.2, 'p': 4.2}}}}, 
-	# 		 {'l_1': 32., 'l_2': 16.,
-	# 		 'reinf': {'l_1': {'column': {'n': 6.22, 'p': 2.6}, 'middle': {'n': 2.07, 'p': 2.07}},
-	# 		      	   'l_2': {'column': {'n': 2.62, 'p': 2.07}, 'middle': {'n': 6.22, 'p': 6.22}}}}, 
-	# 		 {'l_1': 36., 'l_2': 16.,
-	# 		 'reinf': {'l_1': {'column': {'n': 8.11, 'p': 3.36}, 'middle': {'n': 2.6, 'p': 2.21}},
-	# 		      	   'l_2': {'column': {'n': 3.0, 'p': 2.07}, 'middle': {'n': 7.3, 'p': 7.3}}}},
-	# 		 {'l_1': 38., 'l_2': 32,
-	# 		 'reinf': {'l_1': {'column': {'n': 16.5, 'p': 6.9}, 'middle': {'n': 5.3, 'p': 4.5}},
-	# 		      	   'l_2': {'column': {'n': 13.5, 'p': 5.6}, 'middle': {'n': 5.7, 'p': 5.7}}}},
-	# 		 {'l_1': 36., 'l_2': 32,
-	# 		 'reinf': {'l_1': {'column': {'n': 14.7, 'p': 6.1}, 'middle': {'n': 4.7, 'p': 4.2}},
-	# 		      	   'l_2': {'column': {'n': 12.7, 'p': 5.3}, 'middle': {'n': 5.2, 'p': 5.2}}}}]
-	# bay = {'l_1': 'interior', 'l_2': 'interior'}
-	# col_size = {'c1': 24, 'c2': 24}
-	# for slab in slabs:
-	# 	twslab = TwoWayFlatPlateSlab(l_1=slab['l_1'], l_2=slab['l_2'], h=h, f_c=4000, f_y=60000, w_c=150, nu=0.2, 
-	# 								 col_size=col_size, bay=bay, loading=loading, reinforcement=None)
-	# 	print(slab['l_1'], twslab.strips['l_1'], twslab.calculate_bending_moments('l_1')['factored'])
-	# 	print(slab['l_2'], twslab.strips['l_2'], twslab.calculate_bending_moments('l_2')['factored'])
-	# 	#print(twslab.calculate_f_i())
-	# 	print()
+
 
 
