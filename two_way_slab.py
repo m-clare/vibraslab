@@ -106,7 +106,7 @@ class TwoWayFlatPlateSlab(object):
 		for span in self.bending_moments:
 			self.bending_moments[span] = self.calculate_bending_moments(span)
 
-	def calculate_Mn(self, strip_type, location, bay, M_0):
+	def calculate_strip_moment(self, strip_type, location, bay, M_0):
 		'''
 		Calculates design moment based on continuous interior span
 		Needs to be generalized for all span conditions..., find a more efficient way of representing this?
@@ -193,9 +193,9 @@ class TwoWayFlatPlateSlab(object):
 			for moment in moments:
 				for load in load_type:
 					if load == 'dl':
-						service[strip][moment][load] = self.calculate_Mn(strip, moment, self.bay[span], M_0_dl)
+						service[strip][moment][load] = self.calculate_strip_moment(strip, moment, self.bay[span], M_0_dl)
 					if load == 'll':
-						service[strip][moment][load] = self.calculate_Mn(strip, moment, self.bay[span], M_0_ll)
+						service[strip][moment][load] = self.calculate_strip_moment(strip, moment, self.bay[span], M_0_ll)
 		# Factored moments
 		factored = load_out['factored']
 		for strip in strip_types:
@@ -275,7 +275,6 @@ class TwoWayFlatPlateSlab(object):
 			print('As > As_max')
 			As = As_max
 		rho = self.calculate_rho_from_As(strip_width, As)
-		print('rho_max:', self.rho_max, 'rho_R:', rho_R, 'rho_est:', rho)
 		return round(As, 2) 
 
 	def calculate_avg_strip_I_e(self, span, strip_type):

@@ -76,14 +76,12 @@ def batch_slab_output_to_excel(start_row, end_row, odata, wb_name='Flat_Plate_Vi
 	wb= load_workbook(filename=wb_name + '.xlsx')
 	ws = wb[ws_name]
 	if end_row == None:
-		end_row = start_row + len(odata) + 1
-		print(end_row)
+		end_row = start_row + len(odata)
 	rho_ind  = {'l_1': {'column': {'p': 'P', 'n1': 'Q', 'n2': 'R'}, 'middle': {'p': 'S', 'n1': 'T', 'n2': 'U'}},
 			    'l_2': {'column': {'p': 'V', 'n1': 'W', 'n2': 'X'}, 'middle': {'p': 'Y', 'n1': 'Z', 'n2': 'AA'}}}
 	excel_ind = {'k_1': 'AB', 'f_n': 'AC', 'W': 'AD', 'beta': 'AE', 'very_slow': 'AF', 'slow': 'AG', 'moderate': 'AH', 'fast': 'AI'}
 	counter = 0
-	for i in range(start_row, end_row - 1):
-		print(counter, i)
+	for i in range(start_row, end_row):
 		# should use recursion for nested dictionaries....
 		slab_data = odata[counter]
 		for key, address in excel_ind.items():
