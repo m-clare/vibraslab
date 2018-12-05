@@ -6,6 +6,11 @@ from numpy import interp
 from numpy import tanh
 from numpy import cosh
 
+__author__     = ['Maryanne Wachter']
+__version__    = '0.1'
+__status__     = 'Development'
+__date__       = 'Dec 5, 2018'
+
 def check_R(f_c, R):
 	table_A5a = {5000: {30: 0.0005, 60: 0.0010, 89: 0.0015, 118: 0.0020, 147: 0.0025, 
 						176: 0.003, 205: 0.0035, 233: 0.004, 261: 0.0045, 289: 0.0050, 
@@ -69,10 +74,9 @@ class TwoWayFlatPlateSlab(object):
 			raise NotImplementedError
 
 		self.n = 29000000 / self.E_c
-		self.f_r = 4.5 * self.lambda_cw * sqrt(f_c)
+		self.f_r = 4.5 * self.lambda_cw * sqrt(f_c) # CRSI p.4-6
 
 		# set strip widths
-		# WHAT DOES THIS MEAN FOR EXTERIOR STRIPS?
 		self.strips = {'l_1': {}, 'l_2': {}}
 		col_width   = min(0.25 * self.l_1, 0.25 * self.l_2) * 2.
 		for bay, value in self.bay.items():
@@ -109,7 +113,7 @@ class TwoWayFlatPlateSlab(object):
 	def calculate_strip_moment(self, strip_type, location, bay, M_0):
 		'''
 		Calculates design moment based on continuous interior span
-		Needs to be generalized for all span conditions..., find a more efficient way of representing this?
+		Needs to be generalized for all span conditions where Direct Design Method is applicable....
 		'''
 		if bay == 'interior':
 			if strip_type == 'middle' and location == 'p':
@@ -265,15 +269,15 @@ class TwoWayFlatPlateSlab(object):
 		# check As against min and max
 		if self.f_y < 60000:
 			As_min = 0.002 * strip_width * 12 * self.h
-		else: # THIS NEEDS TO BE CHECKED...
+		else:
 			As_min = max(0.0018 * 60000 / self.f_y * strip_width * 12 * self.h, 0.0014 * strip_width * 12 * self.h)
 		if As < As_min:
 			As = As_min
 			print('As is from As_min')
 		As_max = self.calculate_As_from_rho(strip_width, self.rho_max, d=None)
 		if As > As_max:
-			print('As > As_max')
-			As = As_max
+			raise ValueError('As > As_max')
+			# As = As_max
 		rho = self.calculate_rho_from_As(strip_width, As)
 		return round(As, 2) 
 
@@ -294,6 +298,7 @@ class TwoWayFlatPlateSlab(object):
 			elif self.reinforcement['type'] == 'As':
 				As = self.reinforcement[span][strip_type][location]
 			elif self.reinforcement['type'] == 'rho':	
+				print('rho')
 				As = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type][location])
 			self.rho[span][strip_type][location] = round(self.calculate_rho_from_As(strip_width, As), 5)
 			I_e = self.calculate_strip_I_e(strip_width, bm, As)
@@ -322,7 +327,6 @@ class TwoWayFlatPlateSlab(object):
 
 	def calculate_k_1(self):
 		# accounts for level of cracking
-		# if self.rho <= 0.01:
 		#  low reinforcement ratio (should include temp/shrink reinforcement)
 		I_e = self.calculate_panel_I_e()
 		I_g = self.calculate_panel_I_g()
@@ -330,7 +334,6 @@ class TwoWayFlatPlateSlab(object):
 		return self.k_1
 
 	def calculate_f_i(self):
-		# calculate k_1 - accounts for level of cracking
 		k_1 = self.calculate_k_1()
 		# calculate k_2
 		col_size = max(self.c_1, self.c_2)
@@ -374,18 +377,19 @@ if __name__ == "__main__":
 	import json
 	# l_1 must be longer span, l_2 must be shorter span
 	# Example 5.3 CRSI Design Guide
-	# d5_3 = {'loading': {'sdl': 20., 'll_design': 65., 'll_vib': 11.},
-	# 		'reinf': {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
-	# 		      	  'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}},
-	# 		      	  'type': 'As'},
-	# 		 'l_1': 25., 'l_2': 20., 'h': 9.5, 'f_c': 4000, 'f_y': 60000, 'w_c': 150, 'nu': 0.2, 
-	# 		 'col_size': {'c1': 22., 'c2': 22.}, 'bay': {'l_1': 'interior', 'l_2': 'interior'}}
-	# ex5_3 = TwoWayFlatPlateSlab(l_1=d5_3['l_1'], l_2=d5_3['l_2'], h=d5_3['h'], 
-	# 							f_c=d5_3['f_c'], f_y=d5_3['f_y'], w_c=d5_3['w_c'], nu=d5_3['nu'], col_size=d5_3['col_size'], 
-	# 	 				        bay=d5_3['bay'], loading=d5_3['loading'], reinforcement=d5_3['reinf'])
-	# print(d5_3['l_1'], ex5_3.calculate_bending_moments('l_1')['factored'])
-	# print(d5_3['l_2'], ex5_3.calculate_bending_moments('l_2')['factored'])
-	# print(ex5_3.calculate_f_i())
+	d5_3 = {'loading': {'sdl': 20., 'll_design': 65., 'll_vib': 11.},
+			'reinf': {'l_1': {'column': {'n1': 5.39, 'n2': 5.39, 'p': 2.31}, 'middle': {'n1': 2.05, 'n2': 2.05, 'p': 2.05}},
+			      	  'l_2': {'column': {'n1': 4.15, 'n2': 4.15, 'p': 2.05}, 'middle': {'n1': 3.08, 'n2': 3.08, 'p': 3.08}},
+			      	  'type': 'As'},
+			 'l_1': 25., 'l_2': 20., 'h': 9.5, 'f_c': 4000, 'f_y': 60000, 'w_c': 150, 'nu': 0.2, 
+			 'col_size': {'c1': 22., 'c2': 22.}, 'bay': {'l_1': 'interior', 'l_2': 'interior'}}
+	ex5_3 = TwoWayFlatPlateSlab(l_1=d5_3['l_1'], l_2=d5_3['l_2'], h=d5_3['h'], 
+								f_c=d5_3['f_c'], f_y=d5_3['f_y'], w_c=d5_3['w_c'], nu=d5_3['nu'], col_size=d5_3['col_size'], 
+		 				        bay=d5_3['bay'], loading=d5_3['loading'], reinforcement=d5_3['reinf'])
+	print(d5_3['l_1'], ex5_3.calculate_bending_moments('l_1')['factored'])
+	print(d5_3['l_2'], ex5_3.calculate_bending_moments('l_2')['factored'])
+	print(ex5_3.calculate_f_i())
+	# Example SSM 
 	ssm_d = {'loading': {'sdl': 21., 'll_design': 125., 'll_vib': 11.},
 			'reinf': {},
 			 'l_1': 35., 'l_2': 22., 'h': 11, 'f_c': 5000, 'f_y': 60000, 'w_c': 145, 'nu': 0.2, 
@@ -397,23 +401,5 @@ if __name__ == "__main__":
 	print(ssm_ex.k_1)
 	print(ssm_ex.weight)
 	print(ssm_ex.I_e)
-	# s = json.dumps(ex5_3.__dict__)
-	# ex5_3.to_json()
-
-	# with open('test.json', 'w') as fh:
-	# 	json.dump(ex5_3.__dict__, fh)
-	# print(ex5_3.calculate_bending_moments('l_1'))
-	# print(ex5_3.calculate_bending_moments('l_2'))
-	# print(ex5_3.mass)
-	# print(ex5_3.I_e)
-	# Parameters to experiment with:
-	# Slab reinforcment (implement as reinforcement ratio rather than As)
-	# Column size
-	# Stiffness variation between column and middle strip (i.e. reinforcement)
-	# Creep/Post Tensioning considerations
-	# Drop panel estimation of equivalent slab based on voids?
-	# LL should be 80
-	# Check LL against AISC comparison
-
 
 

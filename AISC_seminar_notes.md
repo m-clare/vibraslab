@@ -28,7 +28,6 @@ Waveform Acceleration Limit (should usually call manufacturer):
 - narrowband spectrum limit:
 	- RMS acceleration 
 
-
 Generic limits (specific limits usually not available):
 	- usualy 1/3 octave spectral velocity magnitudes
 	- fourier transform and mathematical conversion

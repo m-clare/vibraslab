@@ -1,5 +1,10 @@
 from numpy import pi, sin, exp, interp, sqrt
 
+__author__     = ['Maryanne Wachter']
+__version__    = '0.1'
+__status__     = 'Development'
+__date__       = 'Dec 5, 2018'
+
 vibration_crit_limits = {'Ordinary workshops': 32000, 'Offices': 16000, 'Computer systems': 8000, 'Residences': 8000,
 						 'Operating rooms': 4000, 'Surgery facilities': 4000, 'Bench microscopes 100x': 4000, 'Lab robots': 4000,
 						 'Bench microscopes 400x': 2000}
@@ -25,7 +30,7 @@ def check_sensitive_equip_steel(floor_fn, eff_weight, damping, manufacturer_limi
 		V_13 = 250e6 / (beta * W * 1000) * f_step ** 2.43 / f_n ** 1.8 * (1 - exp(-2 * pi * beta * f_n / f_step))
 		return round(V_13, 0)
 
-	def eqn_6_3b(f_step, f_n, beta, gamma, W):
+	def eqn_6_3b(f_n, beta, gamma, W):
 		V_13 = 175e6 / (beta * W * 1000 * sqrt(f_n)) * exp(-gamma * f_n) # Eqn 6-3b
 		return round(V_13, 0)
 
@@ -36,7 +41,7 @@ def check_sensitive_equip_steel(floor_fn, eff_weight, damping, manufacturer_limi
 	else:
 		limit = vibration_crit_limits[limit_app]
 	if limit_type == 'generic velocity':
-		V_13_out = {}
+		V_13_out = {'beta': damping}
 		for speed in walking_parameters:
 			# Check if low or high frequency floor
 			f_step = walking_parameters[speed]['f_step']
@@ -46,13 +51,13 @@ def check_sensitive_equip_steel(floor_fn, eff_weight, damping, manufacturer_limi
 				f_L = walking_parameters[speed]['f_L']
 				f_U = walking_parameters[speed]['f_U']
 				gamma = walking_parameters[speed]['gamma']
+				V_13_f_L = eqn_6_3b(f_L, damping, gamma, eff_weight)
+				V_13_f_U = eqn_6_3a(f_step, f_U, damping, eff_weight)
 				if floor_fn <= f_L:
-					V_13 = eqn_6_3b(f_step, floor_fn, damping, gamma, eff_weight)
+					V_13 = eqn_6_3b(floor_fn, damping, gamma, eff_weight)
 				elif floor_fn >= f_U:
 					V_13 = eqn_6_3a(f_step, floor_fn, damping, eff_weight)
 				else: # linear interpolate between equations
-					V_13_f_L = eqn_6_3b(f_step, f_L, damping, gamma, eff_weight)
-					V_13_f_U = eqn_6_3a(f_step, f_U, damping, eff_weight)
 					V_13  = round(interp(floor_fn, [f_L, f_U], [V_13_f_L, V_13_f_U]), 0)
 			else:
 				# very slow
@@ -102,23 +107,4 @@ def check_sensitive_equip_concrete(floor_fn, delta_p, manufacturer_limit=None, l
 		return V_out
 
 if __name__ == "__main__":
-	from two_way_slab import TwoWayFlatPlateSlab
-	# l_1 must be longer span, l_2 must be shorter span
-	loading = {'sdl': 20., 'll_design': 65., 'll_vib': 11.}
-	reinf   = {'l_1': {'column': {'n': 5.39, 'p': 2.31}, 'middle': {'n': 2.05, 'p': 2.05}},
-			   'l_2': {'column': {'n': 4.15, 'p': 2.05}, 'middle': {'n': 3.08, 'p': 3.08}},
-			   'type': 'As'}
-	bay = {'l_1': 'interior', 'l_2': 'interior'}
-	floor = TwoWayFlatPlateSlab(l_1=25.0, l_2=20.0, h=9.5, f_c=4000, f_y=60000, w_c=150, nu=0.2, col_size={'c1': 22., 'c2': 22.}, 
-		 				       bay=bay, loading=loading, reinforcement=reinf)
-	fn = floor.calculate_f_i()
-	fw = floor.weight
-	print(fw)
-	delta_p = floor.calculate_delta_p()
-	test = check_sensitive_equip_steel(7.17, 74.5, 0.03, manufacturer_limit=6000, limit_type='generic velocity')
-	print(test)
-	
-	# test_c = check_sensitive_equip_concrete(fn, delta_p, manufacturer_limit=6000, limit_type='maximum velocity')
-	# test_s = check_sensitive_equip_steel(fn, fw, 0.03, manufacturer_limit=6000, limit_type='one-third octave velocity')
-	# print(test_c)
-	# print(test_s)
+	pass
