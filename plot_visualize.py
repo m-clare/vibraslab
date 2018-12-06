@@ -78,7 +78,7 @@ def bubble_plot_floors(data, x_axis, y_axis, size, shape, color):
     for i in range(3):
         for j in range(2):
             axes[i, j].grid(True, alpha=0.3)
-            axes[i, j].scatter(x_values[count], y_values[count], s=size, c=color_values[count], marker='o')
+            axes[i, j].scatter(x_values[count], y_values[count], s=size, c=color_values[count], marker='s')
             axes[i, j].set_title(str(damping[count]) + ' Damping', size=12)
             count += 1
     axes[2, 0].set_xlabel('column size (in)')
@@ -91,9 +91,10 @@ def bubble_plot_floors(data, x_axis, y_axis, size, shape, color):
     patches = []
     for color in legend_color:
         patches.append(mpatches.Patch(color=color_settings[color], label=color))
-    plt.legend(handles=patches)
+    plt.legend(handles=patches, bbox_to_anchor=(1.1, 1), loc='upper center', borderaxespad=0.)
 
-    fig.suptitle('34 ft x 34 ft Bay - Estimated Reinforcement' , fontsize=16)
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper center', borderaxespad=0.)
+    fig.suptitle('36 ft x 32 ft Bay (Interior) - Estimated Reinforcement' , fontsize=16)
     # points = ax.scatter(x_values, y_values, s=size, c=color_values, marker='o')
     # ax.set_xlabel('column size (in)')
     # ax.set_ylabel('slab thickness (in)')
@@ -109,7 +110,7 @@ def bubble_plot_floors(data, x_axis, y_axis, size, shape, color):
 
 if __name__ == "__main__":
     import json
-    with open('./slab_34x34/two_way_slab_damping_study.json') as fh:
+    with open('./slab_36x32/two_way_slab_interior_study.json') as fh:
         data = json.load(fh)
 
     bubble_plot_floors(data, None, None, None, None, None)

@@ -15,10 +15,10 @@ def check_R(f_c, R):
 	table_A5a = {5000: {30: 0.0005, 60: 0.0010, 89: 0.0015, 118: 0.0020, 147: 0.0025, 
 						176: 0.003, 205: 0.0035, 233: 0.004, 261: 0.0045, 289: 0.0050, 
 						317: 0.0055, 345: 0.0060, 372: 0.0065, 399: 0.0070, 426: 0.0075}}
-	# interpolate between values
-	rho = interp(R, [30, 60, 89, 118, 147, 176, 205, 233, 261, 289, 317, 345, 372, 399, 426],
+	# interpolate between values # Table A5a
+	rho = interp(R, [30, 60, 89, 118, 147, 176, 205, 233, 261, 289, 317, 345, 372, 399, 426, 453, 479, 506, 532, 558, 583, 609, 634, 659, 684, 708, 733, 757, 781, 805],
 					[0.0005, 0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005,
-					 0.0055, 0.0060, 0.0065, 0.0070, 0.0075])
+					 0.0055, 0.0060, 0.0065, 0.0070, 0.0075, 0.0080, 0.0085, 0.0090, 0.0095, 0.010, 0.0105, 0.0110, 0.0115, 0.0120, 0.0125, 0.0130, 0.0135, 0.0140, 0.0145, 0.0150])
 	return rho
 
 class TwoWayFlatPlateSlab(object):
@@ -210,6 +210,16 @@ class TwoWayFlatPlateSlab(object):
 	def calculate_flexural_reinforcement(self, bending_moment, cover=0.75, bar_guess=0.75):
 		raise NotImplementedError("Not implemented (yet)! Use another program to design slab for flexure for a tension controlled section")
 
+	def calculate_Mn(self, strip_width, As, d=None):
+		if d == None:
+			cover = 0.75
+			bar_guess = 1.0
+			d = self.h - cover - 0.5 * bar_guess
+		a = As * self.f_y / (0.85 * self.f_c * strip_width * 12)
+		Mn = As * self.f_y * (d - a / 2.)
+		Mn = Mn / 12000.
+		return Mn
+
 	def calculate_strip_I_g(self, strip_width):
 		'''
 		Calculates gross moment of inertia neglecting rebar
@@ -262,10 +272,11 @@ class TwoWayFlatPlateSlab(object):
 			cover = 0.75
 			bar_guess = 1.0
 			d = self.h - cover - 0.5 * bar_guess
-		As = max(M_u * 12000 / d * 0.85 / 54000., 0.0025 * strip_width * 12. * d ) # still need check?
+		# As = max(M_u * 12000 / d * 0.85 / 54000., 0.0025 * strip_width * 12. * d ) # still need check?
 		Mu_ft = M_u / strip_width
 		R  = Mu_ft * 12000 / (self.phi * 12 * d ** 2.0)
 		rho_R = check_R(self.f_c, R)
+		As = rho_R * strip_width * d * 12
 		# check As against min and max
 		if self.f_y < 60000:
 			As_min = 0.002 * strip_width * 12 * self.h
@@ -279,6 +290,8 @@ class TwoWayFlatPlateSlab(object):
 			raise ValueError('As > As_max')
 			# As = As_max
 		rho = self.calculate_rho_from_As(strip_width, As)
+		M_n  = self.calculate_Mn(strip_width, As)
+		print(M_u, 0.9 * M_n)
 		return round(As, 2) 
 
 	def calculate_avg_strip_I_e(self, span, strip_type):
