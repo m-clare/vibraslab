@@ -10,6 +10,64 @@ __version__    = '0.1'
 __status__     = 'Development'
 __date__       = 'Dec 5, 2018'
 
+def line_plot_damping(data):
+
+    damping_settings = {}
+
+    fig, axes = plt.subplots(1, 4, sharey=True)
+
+
+    color_values = []
+    size = []
+    labels = []
+    scale = 2.0
+    plots = ['very_slow', 'slow', 'moderate', 'fast']
+    plot = 'very_slow'
+    plot_x = []
+    plot_y = []
+    damping = [0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07]
+    for plot in plots:
+        x_values = []
+        y_values = []
+        for dr in damping:
+            x = []
+            y = []
+            for floor in data:
+                if floor['vib']['beta'] == dr:
+                    x.append(floor['h'])
+                    y.append(floor['vib'][plot]['V_13'])
+            x_values.append(x)
+            y_values.append(y)
+        plot_x.append(x_values)
+        plot_y.append(y_values)
+
+    count = 0
+    print(len(plot_x))
+    print(len(axes))
+    for i in range(4):
+        axes[i].grid(True, alpha=0.3)
+        x_val = plot_x[i]
+        y_val = plot_y[i]
+        for j in range(len(damping)):    
+            axes[i].plot(x_val[j], y_val[j], label=damping[j])
+        axes[i].plot([10.0, 18.0], [6000., 6000], linestyle='dashed', linewidth=2, color='k')
+        axes[i].set_xlabel('slab depth (in)')
+        axes[0].set_ylabel('Generic velocity response (mips)')
+        axes[i].set_title(plots[i], size=12)
+        plt.legend()
+
+    # legend_color = ['not_passing', 'very_slow', 'slow', 'moderate', 'fast']
+    # patches = []
+    # for color in legend_color:
+    #     patches.append(mpatches.Patch(color=color_settings[color], label=color))
+    # plt.legend(handles=patches, bbox_to_anchor=(1.1, 1), loc='upper center', borderaxespad=0.)
+
+    # # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper center', borderaxespad=0.)
+    fig.suptitle('34 ft x 34 ft Bay (Exterior) Floor Depth Sensitivity' , fontsize=16)
+    plt.show()
+
+
+
 def bubble_plot_floors(data, x_axis, y_axis, size, shape, color):
 
     # Table Attributes for Hover
@@ -94,7 +152,7 @@ def bubble_plot_floors(data, x_axis, y_axis, size, shape, color):
     plt.legend(handles=patches, bbox_to_anchor=(1.1, 1), loc='upper center', borderaxespad=0.)
 
     # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper center', borderaxespad=0.)
-    fig.suptitle('36 ft x 32 ft Bay (Interior) - Estimated Reinforcement' , fontsize=16)
+    fig.suptitle('36 ft x 32 ft Bay (Exterior) - 25% Addt Reinforcement' , fontsize=16)
     # points = ax.scatter(x_values, y_values, s=size, c=color_values, marker='o')
     # ax.set_xlabel('column size (in)')
     # ax.set_ylabel('slab thickness (in)')
@@ -110,8 +168,10 @@ def bubble_plot_floors(data, x_axis, y_axis, size, shape, color):
 
 if __name__ == "__main__":
     import json
-    with open('./slab_36x32/two_way_slab_interior_study.json') as fh:
+
+    with open('./slab_34x34/two_way_slab_thickness_study.json') as fh:
         data = json.load(fh)
 
-    bubble_plot_floors(data, None, None, None, None, None)
+    # bubble_plot_floors(data, None, None, None, None, None)
+    line_plot_damping(data)
     pass

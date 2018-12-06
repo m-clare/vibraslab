@@ -58,10 +58,16 @@ def batch_slab_excel_to_input(start_row, end_row=None, rho=False, wb_name=None, 
 		if rho == True:
 			# should use recursion for nested dictionaries....
 			slab_dict['reinforcement'] = {}
-			slab_dict['reinforcement'].update({'l_1': {'column': {'p': ws['P' + str(i)].value, 'n1': ws['Q' + str(i)].value, 'n2': ws['R' + str(i)].value}, 
-							   				 'middle': {'p': ws['S' + str(i)].value, 'n1': ws['T' + str(i)].value, 'n2': ws['U' + str(i)].value}},
-					   			    'l_2':  {'column': {'p': ws['V' + str(i)].value, 'n1': ws['W' + str(i)].value, 'n2': ws['X' + str(i)].value}, 
-							   				 'middle': {'p': ws['Y' + str(i)].value, 'n1': ws['Z' + str(i)].value, 'n2': ws['AA' + str(i)].value}}, 'type': 'rho'})
+			cf = 1.0
+			mf = 1.0
+			slab_dict['reinforcement'].update({'l_1': {'column': {'p': ws['P' + str(i)].value * cf, 'n1': ws['Q' + str(i)].value * cf, 'n2': ws['R' + str(i)].value * cf}, 
+							   				 'middle': {'p': ws['S' + str(i)].value * mf, 'n1': ws['T' + str(i)].value * mf, 'n2': ws['U' + str(i)].value * mf}},
+					   			    'l_2':  {'column': {'p': ws['V' + str(i)].value * cf, 'n1': ws['W' + str(i)].value * cf, 'n2': ws['X' + str(i)].value * cf}, 
+							   				 'middle': {'p': ws['Y' + str(i)].value * mf, 'n1': ws['Z' + str(i)].value * mf, 'n2': ws['AA' + str(i)].value * mf}}, 'type': 'rho'})
+			# slab_dict['reinforcement'].update({'l_1': {'column': {'p': ws['P' + str(i)].value, 'n1': ws['Q' + str(i)].value, 'n2': ws['R' + str(i)].value}, 
+			# 				   				 'middle': {'p': ws['S' + str(i)].value, 'n1': ws['T' + str(i)].value, 'n2': ws['U' + str(i)].value}},
+			# 		   			    'l_2':  {'column': {'p': ws['V' + str(i)].value, 'n1': ws['W' + str(i)].value, 'n2': ws['X' + str(i)].value}, 
+			# 				   				 'middle': {'p': ws['Y' + str(i)].value, 'n1': ws['Z' + str(i)].value, 'n2': ws['AA' + str(i)].value}}, 'type': 'rho'})
 	return slabs
 
 def batch_slab_output_to_excel(start_row, end_row, odata, rho=True, wb_name=None, ws_name=None):

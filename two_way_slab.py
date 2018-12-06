@@ -311,7 +311,6 @@ class TwoWayFlatPlateSlab(object):
 			elif self.reinforcement['type'] == 'As':
 				As = self.reinforcement[span][strip_type][location]
 			elif self.reinforcement['type'] == 'rho':	
-				print('rho')
 				As = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type][location])
 			self.rho[span][strip_type][location] = round(self.calculate_rho_from_As(strip_width, As), 5)
 			I_e = self.calculate_strip_I_e(strip_width, bm, As)
