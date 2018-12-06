@@ -33,8 +33,8 @@ class TwoWayFlatPlateSlab(object):
 		self.l_2 = l_2
 		self.h = h
 		self.f_c = f_c
-		self.c_1 = col_size['c1']
-		self.c_2 = col_size['c2']
+		self.c1 = col_size['c1']
+		self.c2 = col_size['c2']
 		self.bay = bay or {}
 		self.l_ratio = self.l_1 / self.l_2
 		self.f_y = f_y
@@ -170,9 +170,9 @@ class TwoWayFlatPlateSlab(object):
 		if span not in span_types:
 			raise ValueError("Invalid span type. Expected one of: %s" % span_types)
 		if span == 'l_1':
-			col_dim = self.c_1
+			col_dim = self.c1
 		if span == 'l_2':
-			col_dim = self.c_2
+			col_dim = self.c2
 		w_sdl = self.loading['sdl']
 		w_ll_design  = self.loading['ll_design']
 		w_dl = self.w_c * self.h / 12. + w_sdl
@@ -336,7 +336,7 @@ class TwoWayFlatPlateSlab(object):
 	def calculate_f_i(self):
 		k_1 = self.calculate_k_1()
 		# calculate k_2
-		col_size = max(self.c_1, self.c_2)
+		col_size = max(self.c1, self.c2)
 		if col_size > 24:
 			k_2 = 2.1
 		else:

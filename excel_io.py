@@ -66,12 +66,18 @@ def batch_slab_excel_to_input(start_row, end_row=None, rho=False, wb_name=None, 
 
 def batch_slab_output_to_excel(start_row, end_row, odata, rho=True, wb_name=None, ws_name=None):
 	wb= load_workbook(filename=wb_name + '.xlsx')
-	ws = wb[ws_name]
+	try:
+		ws = wb[ws_name]
+	except:
+		ws = wb.create_sheet(ws_name)
 	if end_row == None:
 		end_row = start_row + len(odata)
+	excel_ind = {'l_1': 'B', 'l_2': 'C', 'nu': 'H', 'f_c': 'I', 'f_y': 'J', 'h': 'K', 'w_c': 'L', 'k_1': 'AB', 'f_i': 'AC', 'weight': 'AD'}
+	col_ind = {'c1': 'F', 'c2': 'G'}
+	loading_ind = {'sdl': 'M', 'll_design': 'N', 'll_vib': 'O'}
+	bay_ind = {'l_1': 'D', 'l_2': 'E'}
 	rho_ind  = {'l_1': {'column': {'p': 'P', 'n1': 'Q', 'n2': 'R'}, 'middle': {'p': 'S', 'n1': 'T', 'n2': 'U'}},
 			    'l_2': {'column': {'p': 'V', 'n1': 'W', 'n2': 'X'}, 'middle': {'p': 'Y', 'n1': 'Z', 'n2': 'AA'}}}
-	excel_ind = {'k_1': 'AB', 'f_i': 'AC', 'weight': 'AD'}
 	vib_ind = {'beta': 'AE', 'very_slow': 'AF', 'slow': 'AG', 'moderate': 'AH', 'fast': 'AI'}
 	counter = 0
 	for i in range(start_row, end_row):
@@ -84,6 +90,13 @@ def batch_slab_output_to_excel(start_row, end_row, odata, rho=True, wb_name=None
 				ws[address + str(i)] = slab_data['vib'][key]
 			else:
 				ws[address + str(i)] = slab_data['vib'][key]['V_13']
+		# Nested info
+		for key, address in col_ind.items():
+			ws[address + str(i)] = slab_data[key]
+		for key, address in loading_ind.items():
+			ws[address + str(i)] = slab_data['loading'][key]
+		for key, address in bay_ind.items():
+			ws[address + str(i)] = slab_data['bay'][key]
 		# Reinforcement Info
 		if rho == True:
 			spans = ['l_1', 'l_2']
