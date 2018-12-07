@@ -1,0 +1,539 @@
+// ----------------------------------------------------------------------------------- 
+//                              ADAPT CORPORATION																			
+//          1733 Woodside Road, Suite 220, Redwood City, CA 94061 USA									
+//                   Tel: (650) 306 2400, Fax: (650) 306 2401													
+//         E-mail: support@adaptsoft.com,  Web site: www.adaptsoft.com									
+// -----------------------------------------------------------------------------------	
+// All units in N-mm																																			
+// -----------------------------------------------------------------------------------
+
+
+~DATA ID_OF_THIS_FILE
+	"C:\Users\mwachter\workspaces\vibraslab\test.INP"
+	"December 07, 2018"
+	"15:53:38"
+	"2016"
+~END_DATA ID_OF_THIS_FILE
+
+~DATA NAME_AND_VERSION
+    "C:\Program Files (x86)\ADAPT\ADAPT-Builder 2016\Examples\EDU_10.adm"
+    "December 07, 2018"
+    "03:53PM"
+    "2016"
+~END_DATA NAME_AND_VERSION
+
+~DATA FOLDER_DIRECTORY
+     1000000 "UNITS"
+     2000000 "BASIC_STRUCTURAL_INFOMATION"
+     3000000 "MATERIALS"
+     4000000 "LOAD_COMBINATIONS"
+     5000000 "DATA_OF_EACH_LEVEL"
+~END_DATA FOLDER_DIRECTORY
+
+~DATA UNITS
+    1000000 "UNITS"
+    "UNITS" N-mm
+~END_DATA UNITS
+
+~DATA BASIC_STRUCTURAL_INFORMATION
+    2000000 "BASIC_STRUCTURAL_INFORMATION"
+    ~DATA CAPSULE_DIRECTORY
+        2010000 "STRUCTURE PARAMETERS"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA STRUCTURE_PARAMETERS
+        2010000 "STRUCTURE_PARAMETERS"
+        "Number of levels" 3
+        //=Level # === Label ========z-coord=====Top level height===Bottom Level Height===Story=====
+        //---1-----------2--------------3------------4-------5-------6-----
+        3     "LEVEL_3" 6096.000 0.000 3048.000 "Top plane"
+        2     "LEVEL_2" 3048.000 3048.000 3048.000 "Current plane"
+        1     "LEVEL_1" 0.000 3048.000 0.000 "Bottom plane"
+    ~END_DATA STRUCTURE_PARAMETERS
+~END_DATA BASIC_STRUCTURAL_INFORMATION
+
+~DATA MATERIALS
+    3000000 "Materials"
+    ~DATA CAPSULE_DIRECTORY
+        3010000 "MATERIAL_PROPERTIES"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA MATERIAL_PROPERTIES
+        3010000 "MATERIAL_PROPERTIES"
+        "Number of material types" 1
+        //1--nomal weight; 2--semi_lightweight; 3--lightweight
+        //--ID---LightWeight----Fc----Wc-----Ec----meu----alfa-----G----Label----Hagg-----unit_price—-
+        1  1 27.578599 0.000023547930000 23993.381136 0.200000 0.000003 9997.242140 "Concrete 1" 0.000000 2.000000
+    ~END_DATA MATERIAL_PROPERTIES
+~END_DATA MATERIALS
+
+~DATA MATERIALS_GENERIC
+//1-ID; 2-Type;  3-Strength; 4-Es_modulus_of_elasticity; 5-Unit weight; 6-Poissons_ratio; 7-Coeff_of_thermal_expansion; 8-Shear-moduldus; 9- Unit_cost; 10-Label
+-----1----------2-----------3---------4-----------5----------6----------7----------8----------9-----10
+~END_DATA MATERIALS_GENERIC
+
+~DATA MATERIALS_MILDSTEEL
+//1-Fy_yeld stress; 2-Fu_tensile_strength; 3-Es_modulus_of_elasticity; 4-Unit weight; 5-Poissons_ratio; 6-Coeff_of_thermal_expansion; 7-Shear-moduldus;8- Unit_cost; 9-Label
+//---MatId----Fy---------Fu----------Es--------Wst---------mu-------alpha-------sm-------unit_cost----Label-
+-----1----------2-----------3---------4-----------5----------6----------7----------8----------9-----10---
+    1   413.67898511 0.00000000 199944.84280199 0.00000781 0.00206897 0.00000333 0.00000000 1.35000000 "MildSteel 1"
+~END_DATA MATERIALS_MILDSTEEL
+
+~DATA SECTION_TYPE
+//-ID——shape(1=rectangular, 2=circular, 3=generic)---Bounding_box_A---Bounding_box_B-----A---I11---I22---J—C1neg---C1pos---C2neg---C2pos----Label---ExternalID----BuilderID
+//-----1----------2-----------3---------4-----------5----------6----------7----------8----------9-----10---
+~END_DATA SECTION_TYPE
+
+~DATA LOAD_COMBINATIONS
+    4000000 "LOAD_COMBINATIONS"
+    ~DATA CAPSULE_DIRECTORY
+        4100000 "COMB_1"
+        4200000 "COMB_2"
+    ~END_DATA CAPSULE_DIRECTORY
+
+    ~DATA COMB_1
+        4100000 "COMB_1"
+//1=serviceability; 2 = service total load; 3 = service sustained load; 4=service frequent; 5=service quasi-permanent; 6=strength; 7=initial; 8=no code check; 9=cracked deflection; 10=long term deflection
+//==Analysis/design_option==================label
+        1      "Service Combination"
+//===ID=====Load case====load factor=====
+//---1-------2------------3--------------
+      1 "Dead load" 1.00
+      2 "Selfweight" 1.00
+      3 "Live load" 1.00
+    ~END_DATA COMB_1
+
+    ~DATA COMB_2
+        4200000 "COMB_2"
+//1=serviceability; 2 = service total load; 3 = service sustained load; 4=service frequent; 5=service quasi-permanent; 6=strength; 7=initial; 8=no code check; 9=cracked deflection; 10=long term deflection
+//==Analysis/design_option==================label
+        6      "Strength Combination"
+//===ID=====Load case====load factor=====
+//---1-------2------------3--------------
+      1 "Dead load" 1.40
+      2 "Selfweight" 1.40
+      3 "Live load" 1.70
+    ~END_DATA COMB_2
+
+~END_DATA LOAD_COMBINATIONS
+
+
+~DATA DATA_OF_EACH_LEVEL
+    5000000 "DATA_OF_EACH_LEVEL"
+    ~DATA CAPSULE_DIRECTORY
+        5010000 "LEVEL_1"
+        5020000 "LEVEL_2"
+        5030000 "LEVEL_3"
+    ~END_DATA CAPSULE_DIRECTORY
+
+
+//===========================================LEVEL_1=====================================
+
+~DATA LEVEL_1
+    5010000 "LEVEL_1"
+~DATA CAPSULE_DIRECTORY
+     5011000 "GEOMETRY"
+     5012000 "LOADS"
+~END_DATA CAPSULE_DIRECTORY
+  ~DATA GEOMETRY
+    5021000 "GEOMETRY"
+    ~DATA CAPSULE_DIRECTORY
+        5011100 "BEAM"
+        5011200 "COLUMN"
+        5011300 "WALL"
+        5011400 "SLAB"
+        5011500 "DROP_CAP/PANEL"
+        5011600 "OPENING"
+    ~END_DATA CAPSULE_DIRECTORY
+        ~DATA BEAM
+        5021100 "BEAM"
+//x1,y1,x2,y2 = coords or end of beams, width, depth = stem of beam to top of slab
+//offset is the distance from top of beam to the referrence plane
+//---X1-----Y1-----X2-----Y2------Width-----DEPTH-----OFFSET-----Material ID-----Label---ExternalID--BuilderID-Material Type(1=concrete, 2 generic)--Shape(1=Rectangular, 2=Generic)---Section ID--#
+//---1------2------3------4--------5----------6---------7-----------8--------------9--10--11------12--------13
+        ~END_DATA BEAM
+
+        ~DATA COLUMN
+        5021200 "COLUMN"
+//Flag = 0, bottom column, flag = 1, top column; Type (1=rectangular column, 2= circular column, 3=Generic Section) 
+//--Flag---Type----X1-----Y1-----Theta----Width-----DEPTH--OFFSET_TOP--OFFSET_BOT--Material ID-----Label--ExternalID---BuilderID---XOfsBot---YOfsBot---XOfsTop—YOfsTop--MaterialType (1 concrete; 2 generic)-- Section_type_ID ---#-
+//---1------2------3------4--------5--------6---------7-----------8-------9--------------10----------11-------12----------13---------14--------15---------16------17--------18------------19--------------20-
+1 1 1524.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 1" 0 1 0.000000 0.000000 -0.000000 -0.000000 1 0 1
+1 1 1524.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 2" 0 2 0.000000 0.000000 -0.000000 -0.000000 1 0 2
+1 1 7620.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 3" 0 3 0.000000 0.000000 -0.000000 -0.000000 1 0 3
+1 1 13716.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 4" 0 4 0.000000 0.000000 -0.000000 -0.000000 1 0 4
+1 1 13716.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 5" 0 5 0.000000 0.000000 -0.000000 -0.000000 1 0 5
+        ~END_DATA COLUMN
+
+        ~DATA WALL
+        5021300 "WALL"
+//Flag = 0, bottom wall, flag = 1, top wall
+//--Flag---X1-----Y1-----X2------Y2-----Thickness--OFFSET_TOP--OFFSET_BOT--Material ID-----Label----ExternalID--BuilderID
+//---1-----2------3------4--------5----------6-------7-----------8------------9-------------10--11---12
+        ~END_DATA WALL
+
+~DATA SLAB
+    5021400 "SLAB"
+    ~DATA CAPSULE_DIRECTORY
+        5021410 "SLAB PARAMETERS"
+        5021420 "SLAB GEOMETRY"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA SLAB_PARAMETERS
+        5021410 "SLAB PARAMETERS"
+            "Number of slabs" 0
+    ~END_DATA SLAB_PARAMETERS
+    ~DATA SLAB_GEOMETRY
+        5021420 "SLAB GEOMETRY"
+        ~DATA CAPSULE_DIRECTORY
+        ~END_DATA CAPSULE_DIRECTORY
+    ~END_DATA SLAB_GEOMETRY
+
+~END_DATA SLAB
+
+        ~DATA DROP_CAP/PANEL
+        5021500 "DROP_CAP/PANEL"
+//---X1-----Y1---WIDTH--LENGTH--THICKNESS--THETA---OFFSET--MATERIAL ID-----LABEL--ExteralID---BuilderID
+//---1------2------3------4--------5----------6-------7-----------8---------9-----10----11
+        ~END_DATA DROP_CAP/PANEL
+
+~DATA OPENING
+    5021600 "OPENING"
+    ~DATA CAPSULE_DIRECTORY
+        5021610 "OPENING PARAMETERS"
+        5021620 "OPENING GEOMETRY"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA OPENING_PARAMETERS
+        5021610 "OPENING PARAMETERS"
+            "Number of openings" 0
+    ~END_DATA OPENING_PARAMETERS
+    ~DATA OPENING_GEOMETRY
+        5021620 "OPENING GEOMETRY"
+        ~DATA CAPSULE_DIRECTORY
+        ~END_DATA CAPSULE_DIRECTORY
+    ~END_DATA OPENING_GEOMETRY
+
+~END_DATA OPENING
+
+  ~END_DATA GEOMETRY
+
+
+  ~DATA LOADS
+    5022000 "LOADS"
+    ~DATA CAPSULE_DIRECTORY
+    ~END_DATA CAPSULE_DIRECTORY
+
+    ~END_DATA LOADS
+~DATA REACTIONS
+         5003000 "REACTIONS"
+         ~DATA CAPSULE_DIRECTORY
+         ~END_DATA CAPSULE_DIRECTORY
+
+~END_DATA REACTIONS
+
+~END_DATA LEVEL_1
+
+
+//===========================================LEVEL_2=====================================
+
+~DATA LEVEL_2
+    5020000 "LEVEL_2"
+~DATA CAPSULE_DIRECTORY
+     5021000 "GEOMETRY"
+     5022000 "LOADS"
+~END_DATA CAPSULE_DIRECTORY
+  ~DATA GEOMETRY
+    5021000 "GEOMETRY"
+    ~DATA CAPSULE_DIRECTORY
+        5021100 "BEAM"
+        5021200 "COLUMN"
+        5021300 "WALL"
+        5021400 "SLAB"
+        5021500 "DROP_CAP/PANEL"
+        5021600 "OPENING"
+    ~END_DATA CAPSULE_DIRECTORY
+        ~DATA BEAM
+        5021100 "BEAM"
+//x1,y1,x2,y2 = coords or end of beams, width, depth = stem of beam to top of slab
+//offset is the distance from top of beam to the referrence plane
+//---X1-----Y1-----X2-----Y2------Width-----DEPTH-----OFFSET-----Material ID-----Label---ExternalID--BuilderID-Material Type(1=concrete, 2 generic)--Shape(1=Rectangular, 2=Generic)---Section ID--#
+//---1------2------3------4--------5----------6---------7-----------8--------------9--10--11------12--------13
+1524.000000 1905.000000 13716.000000 1905.000000 457.195355 609.593806 0.000000 1 "Beam 1" 0 1 1 1 0 1
+        ~END_DATA BEAM
+
+        ~DATA COLUMN
+        5021200 "COLUMN"
+//Flag = 0, bottom column, flag = 1, top column; Type (1=rectangular column, 2= circular column, 3=Generic Section) 
+//--Flag---Type----X1-----Y1-----Theta----Width-----DEPTH--OFFSET_TOP--OFFSET_BOT--Material ID-----Label--ExternalID---BuilderID---XOfsBot---YOfsBot---XOfsTop—YOfsTop--MaterialType (1 concrete; 2 generic)-- Section_type_ID ---#-
+//---1------2------3------4--------5--------6---------7-----------8-------9--------------10----------11-------12----------13---------14--------15---------16------17--------18------------19--------------20-
+0 1 1524.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 1" 0 1 0.000000 0.000000 -0.000000 -0.000000 1 0 1
+0 1 1524.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 2" 0 2 0.000000 0.000000 -0.000000 -0.000000 1 0 2
+0 1 7620.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 3" 0 3 0.000000 0.000000 -0.000000 -0.000000 1 0 3
+0 1 13716.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 4" 0 4 0.000000 0.000000 -0.000000 -0.000000 1 0 4
+0 1 13716.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 5" 0 5 0.000000 0.000000 -0.000000 -0.000000 1 0 5
+1 1 1524.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 6" 0 6 0.000000 0.000000 -0.000000 -0.000000 1 0 6
+1 1 1524.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 7" 0 7 0.000000 0.000000 -0.000000 -0.000000 1 0 7
+1 1 7620.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 8" 0 8 0.000000 0.000000 -0.000000 -0.000000 1 0 8
+1 1 13716.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 9" 0 9 0.000000 0.000000 -0.000000 -0.000000 1 0 9
+1 1 13716.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 10" 0 10 0.000000 0.000000 -0.000000 -0.000000 1 0 10
+        ~END_DATA COLUMN
+
+        ~DATA WALL
+        5021300 "WALL"
+//Flag = 0, bottom wall, flag = 1, top wall
+//--Flag---X1-----Y1-----X2------Y2-----Thickness--OFFSET_TOP--OFFSET_BOT--Material ID-----Label----ExternalID--BuilderID
+//---1-----2------3------4--------5----------6-------7-----------8------------9-------------10--11---12
+        ~END_DATA WALL
+
+~DATA SLAB
+    5021400 "SLAB"
+    ~DATA CAPSULE_DIRECTORY
+        5021410 "SLAB PARAMETERS"
+        5021420 "SLAB GEOMETRY"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA SLAB_PARAMETERS
+        5021410 "SLAB PARAMETERS"
+            "Number of slabs" 1
+    ~END_DATA SLAB_PARAMETERS
+    ~DATA SLAB_GEOMETRY
+        5021420 "SLAB GEOMETRY"
+        ~DATA CAPSULE_DIRECTORY
+            5021421 "SLAB_1"
+        ~END_DATA CAPSULE_DIRECTORY
+        ~DATA SLAB_1
+            5021421 "SLAB_1"
+//---Number of Points----Thickness----Offset----Material ID----Label--externalID---BuilderID
+//-----------1--------------2-----------3------------4-----------5----6----7
+4 279.397161 0.000000 1 "Slab Region 1" 0 1
+//---Point----x----y----
+//-----1------2----3----
+1 0.000000 381.000000
+2 15240.000000 381.000000
+3 15240.000000 11049.000000
+4 0.000000 11049.000000
+        ~END_DATA SLAB_1
+
+    ~END_DATA SLAB_GEOMETRY
+
+~END_DATA SLAB
+
+        ~DATA DROP_CAP/PANEL
+        5021500 "DROP_CAP/PANEL"
+//---X1-----Y1---WIDTH--LENGTH--THICKNESS--THETA---OFFSET--MATERIAL ID-----LABEL--ExteralID---BuilderID
+//---1------2------3------4--------5----------6-------7-----------8---------9-----10----11
+        ~END_DATA DROP_CAP/PANEL
+
+~DATA OPENING
+    5021600 "OPENING"
+    ~DATA CAPSULE_DIRECTORY
+        5021610 "OPENING PARAMETERS"
+        5021620 "OPENING GEOMETRY"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA OPENING_PARAMETERS
+        5021610 "OPENING PARAMETERS"
+            "Number of openings" 0
+    ~END_DATA OPENING_PARAMETERS
+    ~DATA OPENING_GEOMETRY
+        5021620 "OPENING GEOMETRY"
+        ~DATA CAPSULE_DIRECTORY
+        ~END_DATA CAPSULE_DIRECTORY
+    ~END_DATA OPENING_GEOMETRY
+
+~END_DATA OPENING
+
+  ~END_DATA GEOMETRY
+
+
+  ~DATA LOADS
+    5022000 "LOADS"
+    ~DATA CAPSULE_DIRECTORY
+        5022100 "Dead load" 1
+        5022200 "Live load" 1
+    ~END_DATA CAPSULE_DIRECTORY
+
+    ~DATA Dead load
+    5022100 "Dead load"
+    ~DATA POINT_LOAD
+         "POINT_LOAD"
+//--X-----Y-----Z-----Fx-----Fy-----Fz-----Mxx-----Myy-----Label---
+    ~END_DATA POINT_LOAD
+
+    ~DATA LINE_LOAD
+         "LINE_LOAD"
+//--X1----Y1----Z1----X2----Y2----Z2---Fx1-----Fx2-----Fy1-----Fy2-----Fz1-----Fz2-----Mxx1----Mxx2--
+//Myy1-----Myy2-----Label
+    ~END_DATA LINE_LOAD
+
+    ~DATA AREA_LOAD
+        ~DATA CAPSULE_DIRECTORY
+            20211 "AREA_LOAD1"
+        ~END_DATA CAPSULE_DIRECTORY
+
+        ~DATA AREA_LOAD1
+            20211 "AREA_LOAD1"
+//Number of points------------Label----
+        4 "Patch load 1" 0 1
+//---POINT---X----Y----Z----
+        1 0.000000 381.000000 3048.000000
+        2 15240.000000 381.000000 3048.000000
+        3 15240.000000 11049.000000 3048.000000
+        4 0.000000 11049.000000 3048.000000
+//Point----Fx----Fy-----Fz-----Mxx-----Myy--
+        1 0.000000 0.000000 0.001197 0.000000 0.000000
+        2 0.000000 0.000000 0.001197 0.000000 0.000000
+        3 0.000000 0.000000 0.001197 0.000000 0.000000
+        ~END_DATA AREA_LOAD1
+
+    ~END_DATA AREA_LOAD
+    ~END_DATA Dead load
+
+    ~DATA Live load
+    5022200 "Live load"
+    ~DATA POINT_LOAD
+         "POINT_LOAD"
+//--X-----Y-----Z-----Fx-----Fy-----Fz-----Mxx-----Myy-----Label---
+    ~END_DATA POINT_LOAD
+
+    ~DATA LINE_LOAD
+         "LINE_LOAD"
+//--X1----Y1----Z1----X2----Y2----Z2---Fx1-----Fx2-----Fy1-----Fy2-----Fz1-----Fz2-----Mxx1----Mxx2--
+//Myy1-----Myy2-----Label
+    ~END_DATA LINE_LOAD
+
+    ~DATA AREA_LOAD
+        ~DATA CAPSULE_DIRECTORY
+            20222 "AREA_LOAD1"
+        ~END_DATA CAPSULE_DIRECTORY
+
+        ~DATA AREA_LOAD1
+            20221 "AREA_LOAD1"
+//Number of points------------Label----
+        4 "Patch load 2" 0 2
+//---POINT---X----Y----Z----
+        1 0.000000 381.000000 3048.000000
+        2 15240.000000 381.000000 3048.000000
+        3 15240.000000 11049.000000 3048.000000
+        4 0.000000 11049.000000 3048.000000
+//Point----Fx----Fy-----Fz-----Mxx-----Myy--
+        1 0.000000 0.000000 0.002394 0.000000 0.000000
+        2 0.000000 0.000000 0.002394 0.000000 0.000000
+        3 0.000000 0.000000 0.002394 0.000000 0.000000
+        ~END_DATA AREA_LOAD1
+
+    ~END_DATA AREA_LOAD
+    ~END_DATA Live load
+
+    ~END_DATA LOADS
+~DATA REACTIONS
+         5003000 "REACTIONS"
+         ~DATA CAPSULE_DIRECTORY
+         ~END_DATA CAPSULE_DIRECTORY
+
+~END_DATA REACTIONS
+
+~END_DATA LEVEL_2
+
+
+//===========================================LEVEL_3=====================================
+
+~DATA LEVEL_3
+    5030000 "LEVEL_3"
+~DATA CAPSULE_DIRECTORY
+     5031000 "GEOMETRY"
+     5032000 "LOADS"
+~END_DATA CAPSULE_DIRECTORY
+  ~DATA GEOMETRY
+    5021000 "GEOMETRY"
+    ~DATA CAPSULE_DIRECTORY
+        5031100 "BEAM"
+        5031200 "COLUMN"
+        5031300 "WALL"
+        5031400 "SLAB"
+        5031500 "DROP_CAP/PANEL"
+        5031600 "OPENING"
+    ~END_DATA CAPSULE_DIRECTORY
+        ~DATA BEAM
+        5021100 "BEAM"
+//x1,y1,x2,y2 = coords or end of beams, width, depth = stem of beam to top of slab
+//offset is the distance from top of beam to the referrence plane
+//---X1-----Y1-----X2-----Y2------Width-----DEPTH-----OFFSET-----Material ID-----Label---ExternalID--BuilderID-Material Type(1=concrete, 2 generic)--Shape(1=Rectangular, 2=Generic)---Section ID--#
+//---1------2------3------4--------5----------6---------7-----------8--------------9--10--11------12--------13
+        ~END_DATA BEAM
+
+        ~DATA COLUMN
+        5021200 "COLUMN"
+//Flag = 0, bottom column, flag = 1, top column; Type (1=rectangular column, 2= circular column, 3=Generic Section) 
+//--Flag---Type----X1-----Y1-----Theta----Width-----DEPTH--OFFSET_TOP--OFFSET_BOT--Material ID-----Label--ExternalID---BuilderID---XOfsBot---YOfsBot---XOfsTop—YOfsTop--MaterialType (1 concrete; 2 generic)-- Section_type_ID ---#-
+//---1------2------3------4--------5--------6---------7-----------8-------9--------------10----------11-------12----------13---------14--------15---------16------17--------18------------19--------------20-
+0 1 1524.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 6" 0 6 0.000000 0.000000 -0.000000 -0.000000 1 0 1
+0 1 1524.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 7" 0 7 0.000000 0.000000 -0.000000 -0.000000 1 0 2
+0 1 7620.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 8" 0 8 0.000000 0.000000 -0.000000 -0.000000 1 0 3
+0 1 13716.000000 1905.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 9" 0 9 0.000000 0.000000 -0.000000 -0.000000 1 0 4
+0 1 13716.000000 9525.000000 0.000000 457.195355 457.195355 0.000000 0.000000 1 "Column 10" 0 10 0.000000 0.000000 -0.000000 -0.000000 1 0 5
+        ~END_DATA COLUMN
+
+        ~DATA WALL
+        5021300 "WALL"
+//Flag = 0, bottom wall, flag = 1, top wall
+//--Flag---X1-----Y1-----X2------Y2-----Thickness--OFFSET_TOP--OFFSET_BOT--Material ID-----Label----ExternalID--BuilderID
+//---1-----2------3------4--------5----------6-------7-----------8------------9-------------10--11---12
+        ~END_DATA WALL
+
+~DATA SLAB
+    5021400 "SLAB"
+    ~DATA CAPSULE_DIRECTORY
+        5021410 "SLAB PARAMETERS"
+        5021420 "SLAB GEOMETRY"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA SLAB_PARAMETERS
+        5021410 "SLAB PARAMETERS"
+            "Number of slabs" 0
+    ~END_DATA SLAB_PARAMETERS
+    ~DATA SLAB_GEOMETRY
+        5021420 "SLAB GEOMETRY"
+        ~DATA CAPSULE_DIRECTORY
+        ~END_DATA CAPSULE_DIRECTORY
+    ~END_DATA SLAB_GEOMETRY
+
+~END_DATA SLAB
+
+        ~DATA DROP_CAP/PANEL
+        5021500 "DROP_CAP/PANEL"
+//---X1-----Y1---WIDTH--LENGTH--THICKNESS--THETA---OFFSET--MATERIAL ID-----LABEL--ExteralID---BuilderID
+//---1------2------3------4--------5----------6-------7-----------8---------9-----10----11
+        ~END_DATA DROP_CAP/PANEL
+
+~DATA OPENING
+    5021600 "OPENING"
+    ~DATA CAPSULE_DIRECTORY
+        5021610 "OPENING PARAMETERS"
+        5021620 "OPENING GEOMETRY"
+    ~END_DATA CAPSULE_DIRECTORY
+    ~DATA OPENING_PARAMETERS
+        5021610 "OPENING PARAMETERS"
+            "Number of openings" 0
+    ~END_DATA OPENING_PARAMETERS
+    ~DATA OPENING_GEOMETRY
+        5021620 "OPENING GEOMETRY"
+        ~DATA CAPSULE_DIRECTORY
+        ~END_DATA CAPSULE_DIRECTORY
+    ~END_DATA OPENING_GEOMETRY
+
+~END_DATA OPENING
+
+  ~END_DATA GEOMETRY
+
+
+  ~DATA LOADS
+    5022000 "LOADS"
+    ~DATA CAPSULE_DIRECTORY
+    ~END_DATA CAPSULE_DIRECTORY
+
+    ~END_DATA LOADS
+~DATA REACTIONS
+         5003000 "REACTIONS"
+         ~DATA CAPSULE_DIRECTORY
+         ~END_DATA CAPSULE_DIRECTORY
+
+~END_DATA REACTIONS
+
+~END_DATA LEVEL_3
+~END_DATA DATA_OF_EACH_LEVEL
+

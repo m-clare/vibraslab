@@ -167,8 +167,8 @@ def bubble_plot_floors(data, name, x_axis, y_axis, size, shape, color):
 if __name__ == "__main__":
     import json
 
-    bay = '36x16'
-    param = 'thickness_study'
+    bay = '34x34'
+    param = 'exterior_study'
     # plot_type = 
     with open('./slab_' + bay +'/two_way_slab_' + param + '.json') as fh:
         data = json.load(fh)
