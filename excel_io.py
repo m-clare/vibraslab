@@ -31,15 +31,25 @@ def slab_excel_to_json(wb_name='Flat_Plate_Vibration_Template.xlsx', ws_name='Sl
 		slab_dict['bay'][key] = ws[address].value
 	return slab_dict
 
-def batch_slab_excel_to_input(start_row, end_row=None, rho=False, wb_name=None, ws_name=None):
+def batch_slab_excel_to_input(start_row, end_row=None, slab_type=None, rho=False, wb_name=None, ws_name=None):
 	wb = load_workbook(filename=wb_name + '.xlsx', data_only=True)
 	ws = wb[ws_name]
 	if end_row == None:
 		end_row = ws.max_row
-	excel_ind = {'l_1': 'B', 'l_2': 'C', 'nu': 'H', 'f_c': 'I', 'f_y': 'J', 'h': 'K', 'w_c': 'L'}
-	col_ind = {'c1': 'F', 'c2': 'G'}
-	loading_ind = {'sdl': 'M', 'll_design': 'N', 'll_vib': 'O'}
-	bay_ind = {'l_1': 'D', 'l_2': 'E'}
+	if slab_type =='two way flat plate':
+		excel_ind = {'l_1': 'B', 'l_2': 'C', 'nu': 'H', 'f_c': 'I', 'f_y': 'J', 'h': 'K', 'w_c': 'L'}
+		col_ind = {'c1': 'F', 'c2': 'G'}
+		loading_ind = {'sdl': 'M', 'll_design': 'N', 'll_vib': 'O'}
+		bay_ind = {'l_1': 'D', 'l_2': 'E'}
+		slabs = []
+	if slab_type =='two way drop panel':
+		excel_ind = {'l_1': 'B', 'l_2': 'C', 'nu': 'H', 'f_c': 'I', 'f_y': 'J', 'w_c': 'N'}
+		col_ind = {'c1': 'F', 'c2': 'G'}
+		loading_ind = {'sdl': 'O', 'll_design': 'P', 'll_vib': 'Q'}
+		bay_ind = {'l_1': 'D', 'l_2': 'E'}
+		h_ind = {'l_1': {'column': {'p': 'K', 'n1': 'L', 'n2': 'L'}, 'middle': {'p': 'K', 'n1': 'K', 'n2': 'K'}},
+				 'l_2': {'column': {'p': 'K', 'n1': 'L', 'n2': 'L'}, 'middle': {'p': 'K', 'n1': 'K', 'n2': 'K'}},
+				 'h_equiv': 'M'}
 	slabs = []
 	for i in range(start_row, end_row + 1):
 		slab_dict = {}
@@ -54,23 +64,28 @@ def batch_slab_excel_to_input(start_row, end_row=None, rho=False, wb_name=None, 
 		slab_dict['bay'] = {}
 		for key, address in bay_ind.items():
 			slab_dict['bay'][key] = ws[address + str(i)].value
-		slabs.append(slab_dict)
-		if rho == True:
+		if slab_type == 'two way flat plate':
+			if rho == True:
 			# should use recursion for nested dictionaries....
-			slab_dict['reinforcement'] = {}
-			cf = 1.0
-			mf = 1.0
-			slab_dict['reinforcement'].update({'l_1': {'column': {'p': ws['P' + str(i)].value * cf, 'n1': ws['Q' + str(i)].value * cf, 'n2': ws['R' + str(i)].value * cf}, 
-							   				 'middle': {'p': ws['S' + str(i)].value * mf, 'n1': ws['T' + str(i)].value * mf, 'n2': ws['U' + str(i)].value * mf}},
-					   			    'l_2':  {'column': {'p': ws['V' + str(i)].value * cf, 'n1': ws['W' + str(i)].value * cf, 'n2': ws['X' + str(i)].value * cf}, 
-							   				 'middle': {'p': ws['Y' + str(i)].value * mf, 'n1': ws['Z' + str(i)].value * mf, 'n2': ws['AA' + str(i)].value * mf}}, 'type': 'rho'})
-			# slab_dict['reinforcement'].update({'l_1': {'column': {'p': ws['P' + str(i)].value, 'n1': ws['Q' + str(i)].value, 'n2': ws['R' + str(i)].value}, 
-			# 				   				 'middle': {'p': ws['S' + str(i)].value, 'n1': ws['T' + str(i)].value, 'n2': ws['U' + str(i)].value}},
-			# 		   			    'l_2':  {'column': {'p': ws['V' + str(i)].value, 'n1': ws['W' + str(i)].value, 'n2': ws['X' + str(i)].value}, 
-			# 				   				 'middle': {'p': ws['Y' + str(i)].value, 'n1': ws['Z' + str(i)].value, 'n2': ws['AA' + str(i)].value}}, 'type': 'rho'})
+				slab_dict['reinforcement'] = {}
+				cf = 1.0
+				mf = 1.0
+				slab_dict['reinforcement'].update({'l_1': {'column': {'p': ws['P' + str(i)].value * cf, 'n1': ws['Q' + str(i)].value * cf, 'n2': ws['R' + str(i)].value * cf}, 
+								   				 'middle': {'p': ws['S' + str(i)].value * mf, 'n1': ws['T' + str(i)].value * mf, 'n2': ws['U' + str(i)].value * mf}},
+						   			    'l_2':  {'column': {'p': ws['V' + str(i)].value * cf, 'n1': ws['W' + str(i)].value * cf, 'n2': ws['X' + str(i)].value * cf}, 
+								   				 'middle': {'p': ws['Y' + str(i)].value * mf, 'n1': ws['Z' + str(i)].value * mf, 'n2': ws['AA' + str(i)].value * mf}}, 'type': 'rho'})
+		if slab_type == 'two way drop panel':
+			slab_dict['h'] = {}
+			slab_dict['h'].update({'l_1': {'column': {'p': ws['K' + str(i)].value, 'n1': ws['L' + str(i)].value, 'n2': ws['L' + str(i)].value}, 
+							               'middle': {'p': ws['K' + str(i)].value, 'n1': ws['K' + str(i)].value, 'n2': ws['K' + str(i)].value}},
+								   'l_2': {'column': {'p': ws['K' + str(i)].value, 'n1': ws['L' + str(i)].value, 'n2': ws['L' + str(i)].value},
+								           'middle': {'p': ws['K' + str(i)].value, 'n1': ws['K' + str(i)].value, 'n2': ws['K' + str(i)].value}},
+				 				   'h_equiv': ws['M' + str(i)].value})
+
+		slabs.append(slab_dict)
 	return slabs
 
-def batch_slab_output_to_excel(start_row, end_row, odata, rho=True, wb_name=None, ws_name=None):
+def batch_slab_output_to_excel(start_row, end_row, odata, slab_type=None, rho=True, wb_name=None, ws_name=None):
 	wb= load_workbook(filename=wb_name + '.xlsx')
 	try:
 		ws = wb[ws_name]
@@ -78,13 +93,22 @@ def batch_slab_output_to_excel(start_row, end_row, odata, rho=True, wb_name=None
 		ws = wb.create_sheet(ws_name)
 	if end_row == None:
 		end_row = start_row + len(odata)
-	excel_ind = {'l_1': 'B', 'l_2': 'C', 'nu': 'H', 'f_c': 'I', 'f_y': 'J', 'h': 'K', 'w_c': 'L', 'k_1': 'AB', 'f_i': 'AC', 'weight': 'AD'}
-	col_ind = {'c1': 'F', 'c2': 'G'}
-	loading_ind = {'sdl': 'M', 'll_design': 'N', 'll_vib': 'O'}
-	bay_ind = {'l_1': 'D', 'l_2': 'E'}
-	rho_ind  = {'l_1': {'column': {'p': 'P', 'n1': 'Q', 'n2': 'R'}, 'middle': {'p': 'S', 'n1': 'T', 'n2': 'U'}},
-			    'l_2': {'column': {'p': 'V', 'n1': 'W', 'n2': 'X'}, 'middle': {'p': 'Y', 'n1': 'Z', 'n2': 'AA'}}}
-	vib_ind = {'beta': 'AE', 'very_slow': 'AF', 'slow': 'AG', 'moderate': 'AH', 'fast': 'AI'}
+	if slab_type == 'two way flat plate':
+		excel_ind = {'l_1': 'B', 'l_2': 'C', 'nu': 'H', 'f_c': 'I', 'f_y': 'J', 'h': 'K', 'w_c': 'L', 'k_1': 'AB', 'f_i': 'AC', 'weight': 'AD'}
+		col_ind = {'c1': 'F', 'c2': 'G'}
+		loading_ind = {'sdl': 'M', 'll_design': 'N', 'll_vib': 'O'}
+		bay_ind = {'l_1': 'D', 'l_2': 'E'}
+		rho_ind  = {'l_1': {'column': {'p': 'P', 'n1': 'Q', 'n2': 'R'}, 'middle': {'p': 'S', 'n1': 'T', 'n2': 'U'}},
+				    'l_2': {'column': {'p': 'V', 'n1': 'W', 'n2': 'X'}, 'middle': {'p': 'Y', 'n1': 'Z', 'n2': 'AA'}}}
+		vib_ind = {'beta': 'AE', 'very_slow': 'AF', 'slow': 'AG', 'moderate': 'AH', 'fast': 'AI'}
+	if slab_type == 'two way drop panel':
+		excel_ind = {'l_1': 'B', 'l_2': 'C', 'nu': 'H', 'f_c': 'I', 'f_y': 'J', 'w_c': 'N', 'k_1': 'AD', 'f_i': 'AE', 'weight': 'AF'}
+		col_ind = {'c1': 'F', 'c2': 'G'}
+		loading_ind = {'sdl': 'O', 'll_design': 'P', 'll_vib': 'Q'}
+		bay_ind = {'l_1': 'D', 'l_2': 'E'}
+		rho_ind  = {'l_1': {'column': {'p': 'R', 'n1': 'S', 'n2': 'T'}, 'middle': {'p': 'U', 'n1': 'V', 'n2': 'W'}},
+				    'l_2': {'column': {'p': 'X', 'n1': 'Y', 'n2': 'Z'}, 'middle': {'p': 'AA', 'n1': 'AB', 'n2': 'AC'}}}
+		vib_ind = {'beta': 'AG', 'very_slow': 'AH', 'slow': 'AI', 'moderate': 'AJ', 'fast': 'AK'}
 	counter = 0
 	for i in range(start_row, end_row):
 		# should use recursion for nested dictionaries....
@@ -117,7 +141,6 @@ def batch_slab_output_to_excel(start_row, end_row, odata, rho=True, wb_name=None
 						except:
 							pass
 		counter += 1
-
 	wb.save(filename=wb_name + '.xlsx')
 
 
