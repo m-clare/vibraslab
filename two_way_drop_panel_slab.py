@@ -27,6 +27,8 @@ class TwoWayDropPanel(object):
 		self.l_2 = l_2
 		self.h = h or {}
 		self.h_equiv = self.h['h_equiv']
+		self.h_slab = self.h['l_1']['middle']['p'] # need to generalize
+		self.h_drop = self.h['l_1']['column']['n1'] # need to generalize
 		self.f_c = f_c
 		self.c1 = col_size['c1']
 		self.c2 = col_size['c2']
@@ -56,7 +58,6 @@ class TwoWayDropPanel(object):
 		if w_c >= 90 and w_c <= 160:
 			self.E_c = w_c ** 1.5 * 33 * sqrt(f_c)
 		else:
-			print(w_c)
 			raise ValueError
 
 		if floor_type == 'rc':
@@ -104,7 +105,7 @@ class TwoWayDropPanel(object):
 		# Set bending moments
 		self.bending_moments = {'l_1': {}, 'l_2': {}}
 		for span in self.bending_moments:
-			self.bending_moments[span] = self.calculate_bending_moments(span, self.h_equiv)
+			self.bending_moments[span] = self.calculate_bending_moments(span, self.h_slab)
 
 	def calculate_strip_moment(self, strip_type, location, bay, M_0):
 		'''
@@ -248,8 +249,6 @@ class TwoWayDropPanel(object):
 		else: 		
 			M_ratio = M_cr / M_a
 			I_e = I_cr / (1 - (M_ratio ** 2.0 * (1 - I_cr / I_g)))
-		print('fr: ', self.f_r, 'yt: ', y_t, "Mcr: ", M_cr, 'M_cr/M_a: ', M_ratio)
-		print("I_g: ", I_g, "I_cr: ", I_cr, "I_e: ", I_e)
 		return round(I_e, 0)
 
 	def calculate_rho_from_As(self, strip_width, As, h, d=None):
@@ -310,7 +309,6 @@ class TwoWayDropPanel(object):
 		I_g_msx = self.calculate_avg_strip_I_g('l_1', 'middle')
 		I_g_msy = self.calculate_avg_strip_I_g('l_2', 'middle')
 		self.I_g = ((I_g_csx + I_g_msy) + (I_g_csy + I_g_msx)) / 2.0
-		# print("Ig: ", self.I_g, test)
 		return self.I_g
 
 	def calculate_avg_strip_I_e(self, span, strip_type):
@@ -334,10 +332,7 @@ class TwoWayDropPanel(object):
 			elif self.reinforcement['type'] == 'rho':	
 				As = self.calculate_As_from_rho(strip_width, self.reinforcement[span][strip_type][location], h_eff)
 			self.rho[span][strip_type][location] = round(self.calculate_rho_from_As(strip_width, As, h_eff), 5)
-			print(span, strip_type, location)
 			I_e = self.calculate_strip_I_e(strip_width, bm, As, h_eff)
-			# print(I_e)
-			print()
 			I_eff[I_e_map[location]] = I_e
 
 		I_e  = 0.7 * I_eff['I_m'] + 0.15 * (I_eff['I_e1'] + I_eff['I_e2']) # Eqn 4.19
@@ -368,7 +363,6 @@ class TwoWayDropPanel(object):
 			k_2 = 1.9
 		# calculate lambda_i_sq - allow linear interpolation
 		lambda_i_sq = interp(self.l_ratio, [1.0, 1.5, 2.0], [7.12, 8.92, 9.29])
-		print(lambda_i_sq)
 		gamma = self.mass / (self.l_1 * self.l_2) # slug / ft2
 		self.f_i = k_2 * lambda_i_sq / (2 * pi * self.l_1 ** 2.0) * \
 				   (k_1 * self.E_c * 144 * (self.h_equiv / 12.) ** 3.0 / (12 * gamma * (1 - self.nu ** 2.0))) ** 0.5
@@ -419,22 +413,6 @@ if __name__ == "__main__":
 	slab_test = TwoWayDropPanel(l_1=d5_3['l_1'], l_2=d5_3['l_2'], h=h, 
 								f_c=d5_3['f_c'], f_y=d5_3['f_y'], w_c=d5_3['w_c'], nu=d5_3['nu'], col_size=d5_3['col_size'], 
 		 				        bay=d5_3['bay'], loading=d5_3['loading'])
-	# print(slab_test.l_1, slab_test.calculate_bending_moments('l_2', slab_test.h_equiv))
+	# print(slab_test.l_1, slab_test.calculate_bending_moments('l_1', slab_test.h_slab))
 	print(slab_test.calculate_f_i())
-	print(slab_test.k_1)
-	print(slab_test.f_r)
-	print(slab_test.I_g)
-	print(slab_test.rho)
-	# d5_3 = {'loading': {'sdl': 20., 'll_design': 65., 'll_vib': 11.},
-	# 		'reinf': {'l_1': {'column': {'n1': 5.39, 'n2': 5.39, 'p': 2.31}, 'middle': {'n1': 2.05, 'n2': 2.05, 'p': 2.05}},
-	# 		      	  'l_2': {'column': {'n1': 4.15, 'n2': 4.15, 'p': 2.05}, 'middle': {'n1': 3.08, 'n2': 3.08, 'p': 3.08}},
-	# 		      	  'type': 'As'},
-	# 		 'l_1': 25., 'l_2': 20., 'h': 9.5, 'f_c': 4000, 'f_y': 60000, 'w_c': 150, 'nu': 0.2, 
-	# 		 'col_size': {'c1': 22., 'c2': 22.}, 'bay': {'l_1': 'interior', 'l_2': 'interior'}}
-	# ex5_3 = TwoWayDropPanel(l_1=d5_3['l_1'], l_2=d5_3['l_2'], h=h, 
-	# 							f_c=d5_3['f_c'], f_y=d5_3['f_y'], w_c=d5_3['w_c'], nu=d5_3['nu'], col_size=d5_3['col_size'], 
-	# 	 				        bay=d5_3['bay'], loading=d5_3['loading'], reinforcement=d5_3['reinf'])
-	# print(d5_3['l_1'], ex5_3.calculate_bending_moments('l_1', d5_3['h'])['factored'])
-	# print(d5_3['l_2'], ex5_3.calculate_bending_moments('l_2', d5_3['h'])['factored'])
-	# print(ex5_3.calculate_f_i())
-	# print(ex5_3.rho)
+	print(slab_test.weight)

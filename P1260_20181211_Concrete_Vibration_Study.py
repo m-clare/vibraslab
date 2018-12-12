@@ -15,7 +15,6 @@ floors = batch_slab_excel_to_input(start_row=start_row, end_row=None, slab_type=
 odata = []
 ostudy = []
 for floor in floors:
-	print(floor)
 	twfloor = TwoWayDropPanel(l_1=floor['l_1'], l_2=floor['l_2'], h=floor['h'], f_c=floor['f_c'], 
 								  f_y=floor['f_y'], w_c=floor['w_c'], nu=floor['nu'], 
 								  col_size=floor['col_size'], bay=floor['bay'], 

@@ -109,6 +109,7 @@ def batch_slab_output_to_excel(start_row, end_row, odata, slab_type=None, rho=Tr
 		rho_ind  = {'l_1': {'column': {'p': 'R', 'n1': 'S', 'n2': 'T'}, 'middle': {'p': 'U', 'n1': 'V', 'n2': 'W'}},
 				    'l_2': {'column': {'p': 'X', 'n1': 'Y', 'n2': 'Z'}, 'middle': {'p': 'AA', 'n1': 'AB', 'n2': 'AC'}}}
 		vib_ind = {'beta': 'AG', 'very_slow': 'AH', 'slow': 'AI', 'moderate': 'AJ', 'fast': 'AK'}
+		h_ind = {'h_slab': 'K', 'h_drop': 'L', 'h_equiv': 'M'}
 	counter = 0
 	for i in range(start_row, end_row):
 		# should use recursion for nested dictionaries....
@@ -127,6 +128,8 @@ def batch_slab_output_to_excel(start_row, end_row, odata, slab_type=None, rho=Tr
 			ws[address + str(i)] = slab_data['loading'][key]
 		for key, address in bay_ind.items():
 			ws[address + str(i)] = slab_data['bay'][key]
+		for key, address in h_ind.items():
+			ws[address + str(i)] = slab_data[key]
 		# Reinforcement Info
 		if rho == True:
 			spans = ['l_1', 'l_2']
