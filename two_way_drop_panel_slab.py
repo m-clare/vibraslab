@@ -84,7 +84,9 @@ class TwoWayDropPanel(object):
 		# set mass / weight
 		sdl = self.loading['sdl'] or 0.0
 		ll  = self.loading['ll_vib'] or 0.0
-		self.mass = ((self.h_equiv / 12. * self.w_c + sdl + ll) * self.l_1 * self.l_2) / 32.2 # lb sec2/ft
+		self.self_weight = (self.l_1 * self.l_2 * self.h_slab / 12. + \
+				 	      (0.33 * self.l_1) ** 2.0 * (self.h_drop - self.h_slab) / 12.) / (self.l_1 * self.l_2) 
+		self.mass = ((self.self_weight * self.w_c + sdl + ll) * self.l_1 * self.l_2) / 32.2 # lb sec2/ft
 		self.weight = self.mass * 32.2 / 1000. # kips
 
 		# Calculate maximum reinforcement ratio
