@@ -149,20 +149,8 @@ def bubble_plot_floors(data, name, x_axis, y_axis, size, shape, color):
         patches.append(mpatches.Patch(color=color_settings[color], label=color))
     plt.legend(handles=patches, bbox_to_anchor=(1.1, 1), loc='upper center', borderaxespad=0.)
 
-    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper center', borderaxespad=0.)
     fig.suptitle(name , fontsize=16)
-    # points = ax.scatter(x_values, y_values, s=size, c=color_values, marker='o')
-    # ax.set_xlabel('column size (in)')
-    # ax.set_ylabel('slab thickness (in)')
-    # plt.legend()
-    # ax.set_title('36 ft x 32 ft Bay 3% Damping', size=20)
-
-    # tooltip = plugins.PointHTMLTooltip(points[0], labels, voffset=10, hoffset=10, css=css)
-    # plugins.connect(fig, tooltip)
     plt.show()
-
-    # points = points.values.tolist()
-    # mpld3.show()
 
 if __name__ == "__main__":
     import json

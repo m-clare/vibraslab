@@ -9,6 +9,11 @@ from two_way_slab import TwoWayFlatPlateSlab
 from two_way_slab import check_R
 
 class TwoWayDropPanel(TwoWayFlatPlateSlab):
+	'''
+	Calculate the vibration characteristics (fundamental frequency) of a 2 way flat slab with drop panels 
+	for interior/exterior bays only without beams between interior supports (no edge beam)
+	Note: This assumes that the Direct Design Criteria by ACI have been fulfilled
+	'''
 	def __init__(self, h_dict, *args, **kwargs):
 		super(TwoWayDropPanel, self).__init__(*args, **kwargs)
 

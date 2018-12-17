@@ -1,0 +1,1 @@
+This repo estimates the vibration characteristics (fundamental frequency) of concrete structural floors. Currently only developed for evaluating whether the floor passes sensitive persons/equipment criteria (i.e. for hospitals).
