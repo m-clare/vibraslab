@@ -6,7 +6,7 @@ from excel_io import batch_slab_output_to_excel
 import json
 
 # Excel input
-span = '34x34'
+span = '36x16'
 workbook  = './slab_' + span + '/Flat_Plate_Vibration_' + span
 worksheet = 'Drop_panel_default'
 start_row = 3

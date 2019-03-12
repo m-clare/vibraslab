@@ -9,6 +9,21 @@ vibration_crit_limits = {'Ordinary workshops': 32000, 'Offices': 16000, 'Compute
 						 'Operating rooms': 4000, 'Surgery facilities': 4000, 'Bench microscopes 100x': 4000, 'Lab robots': 4000,
 						 'Bench microscopes 400x': 2000}
 
+def calculate_f_i(k_1, c_1, l_1, l_2, w_c, f_c, h, nu):
+	if col_size > 24:
+		k_2 = 2.1
+	else:
+		k_2 = 1.9
+	if w_c >= 90 and w_c <= 160:
+		E_c = w_c ** 1.5 * 33 * sqrt(f_c)
+	else:
+		raise ValueError
+	lambda_i_sq = interp(l_1 / l_2, [1.0, 1.5, 2.0], [7.12, 8.92, 9.29])
+	mass  = h / 12. * w_c * l_1 * l_2 / 32.2 # lb sec2/ft
+	gamma = mass / (l_1 * l_2) # slug / ft2
+	f_i = k_2 * lambda_i_sq / (2 * pi * l_1 ** 2.0) * sqrt((k_1 * E_c * h ** 3.0) / (12. * gamma * (1 - nu ** 2.)))
+	return f_i
+
 def calculate_mode_scaling(x, y, Lb, Lg, fb, fg):
 	if fb <= fg:
 		phi = sin(pi * x / Lb) * sin(pi * (y + Lg) / (3 * Lg))
@@ -107,4 +122,11 @@ def check_sensitive_equip_concrete(floor_fn, delta_p, manufacturer_limit=None, l
 		return V_out
 
 if __name__ == "__main__":
+	# fn = [4.34,4.45,4.55, 4.64, 4.74, 4.83, 4.93, 5.02, 5.1, 5.19, 5.28, 5.36, 5.45, 5.53, 5.61, 5.69, 5.77, 5.84, 5.92, 6.0]
+	fn = [3.66,3.75,3.83,3.92,4.0,4.08,4.15,4.23,4.31,4.38,4.45,4.52, 4.59, 4.66, 4.73,4.8,4.86,4.93,4.99,5.06, 5.12, 5.18, 5.24, 5.3, 5.36, 5.42, 5.48, 5.54, 5.60, 5.65, 5.71, 5.76, 5.82, 5.87]
+	W = 186.0
+	beta = 0.04
+	for freq in fn:
+		out = (check_sensitive_equip_steel(freq, W, beta, manufacturer_limit=6000, limit_type='generic velocity'))
+		print(out['very_slow']['V_13'])
 	pass
