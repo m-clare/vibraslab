@@ -10,6 +10,9 @@ vibration_crit_limits = {'Ordinary workshops': 32000, 'Offices': 16000, 'Compute
 						 'Bench microscopes 400x': 2000}
 
 def calculate_f_i(k_1, c_1, l_1, l_2, w_c, f_c, h, nu):
+	'''
+	Calculate fundamental frequency of floor system (f_i)
+	'''
 	if col_size > 24:
 		k_2 = 2.1
 	else:
@@ -122,7 +125,6 @@ def check_sensitive_equip_concrete(floor_fn, delta_p, manufacturer_limit=None, l
 		return V_out
 
 if __name__ == "__main__":
-	# fn = [4.34,4.45,4.55, 4.64, 4.74, 4.83, 4.93, 5.02, 5.1, 5.19, 5.28, 5.36, 5.45, 5.53, 5.61, 5.69, 5.77, 5.84, 5.92, 6.0]
 	fn = [3.66,3.75,3.83,3.92,4.0,4.08,4.15,4.23,4.31,4.38,4.45,4.52, 4.59, 4.66, 4.73,4.8,4.86,4.93,4.99,5.06, 5.12, 5.18, 5.24, 5.3, 5.36, 5.42, 5.48, 5.54, 5.60, 5.65, 5.71, 5.76, 5.82, 5.87]
 	W = 186.0
 	beta = 0.04
