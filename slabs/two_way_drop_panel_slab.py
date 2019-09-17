@@ -97,6 +97,7 @@ if __name__ == "__main__":
 	slab_test = TwoWayDropPanel(l_1=d5_3['l_1'], l_2=d5_3['l_2'], h=14, h_dict=h, 
 								f_c=d5_3['f_c'], f_y=d5_3['f_y'], w_c=d5_3['w_c'], nu=d5_3['nu'], col_size=d5_3['col_size'], 
 		 				        bay=d5_3['bay'], loading=d5_3['loading'])
-	print(d5_3['l_1'], d5_3.calculate_bending_moments('l_1', d5_3['h'])['factored'])
-	print(d5_3['l_2'], d5_3.calculate_bending_moments('l_2', d5_3['h'])['factored'])
-	print(ex5_3.calculate_f_i())
+	print(slab_test.l_1)
+	# print(d5_3['l_1'], d5_3.calculate_bending_moments('l_1', d5_3['h'])['factored'])
+	# print(d5_3['l_2'], d5_3.calculate_bending_moments('l_2', d5_3['h'])['factored'])
+	# print(ex5_3.calculate_f_i())
